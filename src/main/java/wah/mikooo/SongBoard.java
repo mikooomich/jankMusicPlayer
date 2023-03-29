@@ -1,0 +1,150 @@
+package wah.mikooo;
+
+
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * Queue data structure
+ */
+public class SongBoard {
+
+    List<Song> queue; // next queue
+    List<Song> prevQueue; // previous songs
+    List<Song> availSongs; // all songs
+
+    /**
+     * Create a SongBoard, initialize by scanning the directory/ies
+     */
+    public SongBoard() {
+        queue = new LinkedList<>();
+        prevQueue = new LinkedList<>();
+        rescan();
+    }
+
+
+    /**
+     * Get all available songs
+     */
+    public void rescan() {
+        FilesManagers fm = new FilesManagers();
+        availSongs = fm.scan();
+    }
+
+
+    /**
+     * Enqueue a song
+     * @param s single song
+     */
+    public void enqueue(Song s) {
+        queue.add(s);
+    }
+
+
+    /**
+     * Enqueue a list of songs
+     * @param s list of songs
+     */
+    public void enqueue(List<Song> s) {
+        queue.addAll(s);
+    }
+
+
+    /**
+     * Enqueue a song after the currently playing song (index 0 of next)
+     * @param s single song
+     */
+    public void enqueueNext(Song s) {
+        if (queue.size() <= 1) {
+            enqueue(s);
+            return;
+        }
+        queue.add(1,s);
+    }
+
+
+    /**
+     * Skip to index.
+     * The song index provided will become the current playing song
+     * ex. indexTo[1] >>>>>> list[0]
+     * @param indexTo
+     */
+    public void advance(int indexTo) {
+
+        for (int i = 0; i < indexTo; i++) {
+            try {
+                // add skipped songs to previous
+                prevQueue.add(queue.remove(0));
+            }
+            catch (IndexOutOfBoundsException err) {
+                System.out.println("There is no more, cannot advance");
+            }
+        } // for
+    }
+
+
+    /**
+     * Reverse of advance()
+     * @param indexTo
+     */
+    public void deAdvance(int indexTo) {
+
+        for (int i = 0; i < indexTo; i++) {
+            try {
+                // yeet the last element of prev to first element of queue
+                queue.add(0,prevQueue.remove(prevQueue.size() - 1));
+            }
+            catch (IndexOutOfBoundsException err) {
+                System.out.println("There is no more, cannot advance");
+            }
+        } // for
+    }
+
+
+    /**
+     * Skip to next song
+     * @return song (not really used at the moment)
+     */
+    public Song getNext() {
+        advance(1);
+        try {
+            return queue.get(0);
+        }
+        catch (IndexOutOfBoundsException err) {
+            System.out.println("The queue is empty");
+            return null;
+        }
+    }
+
+
+    /**
+     * Reverse of getNext()
+     * @return song (not really used at the moment)
+     */
+    public Song getPrev() {
+        deAdvance(1);
+        try {
+            return queue.get(0);
+        }
+        catch (IndexOutOfBoundsException err) {
+            System.out.println("The queue is empty, there are no previous songs");
+            return null;
+        }
+    }
+
+
+    /**
+     * Get currently playing song list[0]
+     * @return
+     */
+    public Song getCurrentlyPlaying() {
+        if (queue.size() < 1) {
+            System.out.println("The queue is empty");
+            return null;
+        }
+
+        return queue.get(0);
+    }
+
+
+}
