@@ -3,9 +3,16 @@ package wah.mikooo;
 public class Song {
 
     public String path;
-//    private String name;
-//    String length;
     byte[] audio;
+
+    // metadata
+    private String title;
+    private String artist;
+    private String album;
+    private String date;
+    private String encoder;
+    private String genre;
+    int length;
 
 
     public Song(String path) {

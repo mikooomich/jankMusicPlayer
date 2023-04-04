@@ -2,21 +2,18 @@ package wah.mikooo;
 
 import javax.sound.sampled.*;
 import java.io.*;
-import java.util.List;
 
 
 public class Main  {
     static Player player;
-
     static Main yes;
     static Thread playerThread;
     static Thread uiThread;
-
+    static AWTbs ui;
 
 
     public Main() throws UnsupportedAudioFileException, IOException, LineUnavailableException, InterruptedException {
-
-
+        ui = new AWTbs(this);
 
         BufferedReader command = new BufferedReader(new InputStreamReader(System.in));
         out:
@@ -31,6 +28,8 @@ public class Main  {
 
             switch (cmd) {
                 case "exit":
+                    System.out.println("Terminating requested by user");
+                    System.exit(0);
                     break out;
                 case "p":
                     player.pause();
@@ -41,6 +40,9 @@ public class Main  {
                 case "n":
                     player.next();
                     break;
+                case "pv":
+                    player.prev();
+                    break;
                 case "t":
                     player.playAll();
                     break;
@@ -48,7 +50,6 @@ public class Main  {
                     player.loadAllSongsIntoMemoryThisIsAVeryBadIdea();
                     System.out.println("I think it finished");
                     break;
-
                 case "m":
                     player.sb.getCurrentlyPlaying();
                     break;
@@ -57,8 +58,11 @@ public class Main  {
 
             command = new BufferedReader(new InputStreamReader(System.in));
         }
+    }
 
 
+    public Player getPlayer() {
+        return player;
     }
 
 
@@ -102,7 +106,6 @@ public class Main  {
             System.out.println("Starting threads");
             uiThread.start();
             playerThread.start();
-
         }
         catch (Exception e) {
             e.printStackTrace();

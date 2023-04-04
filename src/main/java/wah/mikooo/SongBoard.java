@@ -1,6 +1,5 @@
 package wah.mikooo;
 
-
 import java.util.LinkedList;
 import java.util.List;
 
@@ -74,7 +73,7 @@ public class SongBoard {
         for (int i = 0; i < indexTo; i++) {
             try {
                 // add skipped songs to previous
-                prevQueue.add(queue.remove(0));
+                prevQueue.add(0, queue.remove(0));
             }
             catch (IndexOutOfBoundsException err) {
                 System.out.println("There is no more, cannot advance");
@@ -92,7 +91,7 @@ public class SongBoard {
         for (int i = 0; i < indexTo; i++) {
             try {
                 // yeet the last element of prev to first element of queue
-                queue.add(0,prevQueue.remove(prevQueue.size() - 1));
+                queue.add(0,prevQueue.remove(0));
             }
             catch (IndexOutOfBoundsException err) {
                 System.out.println("There is no more, cannot advance");
@@ -145,6 +144,57 @@ public class SongBoard {
 
         return queue.get(0);
     }
+
+
+    /**
+     * Get array of previous songs
+     * @return
+     */
+    public String[] printPrev() {
+        // append the list in reverse
+        String[] display = new String[prevQueue.size()];
+        int index = prevQueue.size() - 1;
+        for (Song s: prevQueue) {
+            display[index] = s.path;
+            index--;
+        }
+        return display;
+    }
+
+
+    /**
+     * Get array of next songs
+     * @return
+     */
+    public String[] printNext() {
+        String[] display = new String[queue.size()];
+        int index = 0; // skip now playing song
+        for (Song s: queue) {
+            if (index == 0) {
+                index++;
+                continue;
+            }
+           display[index] = s.path;
+           index++;
+        }
+        return display;
+    }
+
+
+    /**
+     * Get array of available songs
+     * @return
+     */
+    public String[] printAvail() {
+        String[] display = new String[availSongs.size()];
+        int index = 0; // skip now playing song
+        for (Song s: availSongs) {
+            display[index] = s.path;
+            index++;
+        }
+        return display;
+    }
+
 
 
 }
