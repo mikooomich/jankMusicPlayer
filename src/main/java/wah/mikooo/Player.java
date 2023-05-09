@@ -16,6 +16,7 @@ public class Player implements Runnable {
     static boolean forceWait = false;
 
     static String ffmpegBinary;
+    static String ffprobeBinary;
 
     // the thing that plays audio
     static Mouth mouth;

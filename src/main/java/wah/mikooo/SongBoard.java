@@ -2,6 +2,7 @@ package wah.mikooo;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Queue data structure
@@ -19,6 +20,7 @@ public class SongBoard {
         queue = new LinkedList<>();
         prevQueue = new LinkedList<>();
         rescan();
+        System.out.println("Scanner completed. Found " + availSongs.size());
     }
 
 
@@ -27,7 +29,26 @@ public class SongBoard {
      */
     public void rescan() {
         FilesManagers fm = new FilesManagers();
-        availSongs = fm.scan();
+        availSongs = fm.scanner();
+
+        // NOTE: metadata is extracted asynchronously
+        // TODO: implement synchronizing
+        try {
+            Thread.sleep(3000);
+        }
+        catch (Exception e) {}
+
+
+
+        // remove invalid songs
+        try {
+            List<Song> toRemove = availSongs.stream().filter(song -> song.path.compareTo("INVALID") == 0).toList();
+            toRemove.forEach(song -> availSongs.remove(song));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
 
