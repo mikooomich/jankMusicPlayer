@@ -20,6 +20,9 @@ public class FilesManagers {
             Player.ffprobeBinary = "ffprobe";
 //        }
 
+        if (!new File(libraryPath).exists()) {
+            new File(libraryPath).mkdir();
+        }
     }
 
     /**
