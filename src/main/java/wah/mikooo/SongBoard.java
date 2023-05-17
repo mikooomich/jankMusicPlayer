@@ -1,8 +1,8 @@
 package wah.mikooo;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * Queue data structure
@@ -29,25 +29,26 @@ public class SongBoard {
      */
     public void rescan() {
         FilesManagers fm = new FilesManagers();
-        availSongs = fm.scanner();
-
-        // NOTE: metadata is extracted asynchronously
-        // TODO: implement synchronizing
         try {
-            Thread.sleep(3000);
+            availSongs = fm.scanner();
         }
-        catch (Exception e) {}
+        catch (Exception e) {
+            System.out.println("some unfortunate scanner error: " + Arrays.toString(e.getStackTrace()));
+        }
 
 
 
         // remove invalid songs
         try {
-            List<Song> toRemove = availSongs.stream().filter(song -> song.path.compareTo("INVALID") == 0).toList();
-            toRemove.forEach(song -> availSongs.remove(song));
+            System.out.println("SCANNING AND REMOVING INVALIDS");
+            List<Song> toRemove = availSongs.stream().filter(song -> song.status == -1).toList();
+            toRemove.forEach(song -> {availSongs.remove(song); System.out.println("removed " + song.path);});
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+
+        System.out.println("SCANNER TASK FINISHED");
 
     }
 
@@ -154,6 +155,19 @@ public class SongBoard {
 
 
     /**
+     * Get the next song in the queue without advancing (also doubles as is queue empty)
+     * @return
+     */
+    public Song peekNext() {
+        try {
+            return queue.get(1);
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
      * Get currently playing song list[0]
      * @return
      */
@@ -215,7 +229,6 @@ public class SongBoard {
         }
         return display;
     }
-
 
 
 }

@@ -15,8 +15,8 @@ public class Player implements Runnable {
     static boolean nextRequest = false;
     static boolean forceWait = false;
 
-    static String ffmpegBinary;
-    static String ffprobeBinary;
+    public static String ffmpegBinary;
+    public static String ffprobeBinary;
 
     // the thing that plays audio
     static Mouth mouth;
@@ -221,7 +221,9 @@ public class Player implements Runnable {
                             break inner;
 
                         } else { // assume reached end of song, dispatch song next loop run (easier understood than explained idk)
-                            System.out.println(sb.getNext().path + " (autoplaying)");
+                            if (sb.peekNext() != null) {
+                                System.out.println(sb.getNext().path + " (autoplaying)");
+                            }
                             nextRequest = false;
                            break inner;
                         }

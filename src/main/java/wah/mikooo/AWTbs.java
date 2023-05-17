@@ -4,6 +4,7 @@ package wah.mikooo;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import javax.swing.*;
 
 
@@ -117,8 +118,7 @@ public class AWTbs extends JFrame {
     void draw() {
         try {
             Thread.sleep(400);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }
@@ -137,11 +137,26 @@ public class AWTbs extends JFrame {
         l2scrl.setPreferredSize(new Dimension(600, 270));
 
 
-
-
         // Create the text printout
         JLabel textArea = new JLabel();
-        JScrollPane scrollPane = new JScrollPane(textArea);
+
+
+        Song currentSOng = Player.sb.getCurrentlyPlaying();
+        JPanel imagePanel = new JPanel();
+
+
+        BufferedImage img = currentSOng.albumArt;
+        if (img != null) {
+
+
+        ImageIcon image = new ImageIcon(currentSOng.albumArt.getScaledInstance(100, 100, Image.SCALE_DEFAULT)); // Replace with your own image path
+
+
+        JLabel imageLabel = new JLabel(image);
+
+        imagePanel.add(imageLabel);
+    }
+//        JScrollPane scrollPane = new JScrollPane(textArea);
 
 
         String statusText = "Temporary ui, it hopefully works well enough for testing <br>";
@@ -158,7 +173,9 @@ public class AWTbs extends JFrame {
             catch (Exception e) {
             }
 
-            statusText += ("<br> Now playing: "+ Player.sb.getCurrentlyPlaying().path);
+
+            statusText += ("<br> Now playing: "+currentSOng.path);
+            statusText += "<br> " + currentSOng.title + currentSOng.album +currentSOng.length +currentSOng.codec +currentSOng.date +currentSOng.sampleRate +currentSOng.artist;
         }
         catch (Exception e) {
         }
@@ -169,6 +186,7 @@ public class AWTbs extends JFrame {
         // Add the two lists and the text printout to the panel
         rightPanel.add(l1scrl, BorderLayout.NORTH);
         rightPanel.add(textArea, BorderLayout.CENTER);
+        rightPanel.add(imagePanel, BorderLayout.EAST);
         rightPanel.add(l2scrl, BorderLayout.SOUTH);
         add(rightPanel, BorderLayout.CENTER);
 
