@@ -1,4 +1,4 @@
-package wah.mikooo.ffmpegStuff;
+package wah.mikooo.Exceptions;
 
 public class ImageExtractException extends RuntimeException {
     public ImageExtractException(String message) {

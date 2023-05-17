@@ -1,6 +1,7 @@
 package wah.mikooo.ffmpegStuff;
 
-import wah.mikooo.Song;
+import wah.mikooo.Exceptions.MetadataExtractorException;
+import wah.mikooo.MediaPlayer.Song;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -10,8 +11,8 @@ import java.io.InputStreamReader;
 import java.util.concurrent.Callable;
 
 
-import static wah.mikooo.Player.ffmpegBinary;
-import static wah.mikooo.Player.ffprobeBinary;
+import static wah.mikooo.MediaPlayer.Player.ffmpegBinary;
+import static wah.mikooo.MediaPlayer.Player.ffprobeBinary;
 
 public class MetadataExtractor implements Callable<Integer> {
 

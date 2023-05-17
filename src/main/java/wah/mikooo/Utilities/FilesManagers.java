@@ -1,5 +1,7 @@
-package wah.mikooo;
+package wah.mikooo.Utilities;
 
+import wah.mikooo.MediaPlayer.Player;
+import wah.mikooo.MediaPlayer.Song;
 import wah.mikooo.ffmpegStuff.MetadataExtractor;
 
 import java.io.File;

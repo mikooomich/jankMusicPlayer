@@ -1,4 +1,4 @@
-package wah.mikooo;
+package wah.mikooo.MediaPlayer;
 
 import java.awt.image.BufferedImage;
 

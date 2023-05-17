@@ -1,5 +1,9 @@
-package wah.mikooo;
+package wah.mikooo.Ui;
 
+
+import wah.mikooo.Main;
+import wah.mikooo.MediaPlayer.Player;
+import wah.mikooo.MediaPlayer.Song;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -115,7 +119,7 @@ public class AWTbs extends JFrame {
 
 
     // draw ui
-    void draw() {
+    public void draw() {
         try {
             Thread.sleep(400);
         } catch (Exception e) {

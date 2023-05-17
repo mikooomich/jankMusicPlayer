@@ -1,5 +1,9 @@
 package wah.mikooo;
 
+import wah.mikooo.MediaPlayer.Player;
+import wah.mikooo.MediaPlayer.SongBoard;
+import wah.mikooo.Ui.AWTbs;
+
 import javax.sound.sampled.*;
 import java.io.*;
 
@@ -9,7 +13,7 @@ public class Main  {
     static Main yes;
     static Thread playerThread;
     static Thread uiThread;
-    static AWTbs ui;
+    public static AWTbs ui;
 
 
     public Main() throws UnsupportedAudioFileException, IOException, LineUnavailableException, InterruptedException {

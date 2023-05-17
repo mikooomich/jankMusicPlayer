@@ -1,16 +1,20 @@
-package wah.mikooo;
+package wah.mikooo.MediaPlayer;
+
+
+import wah.mikooo.Main;
 
 import javax.sound.sampled.*;
 import java.io.*;
 
-import static wah.mikooo.Player.Mouth.ffmpegOwO;
+import static wah.mikooo.ffmpegStuff.ffmpegWrapper.ffmpegOwO;
+import static wah.mikooo.ffmpegStuff.ffmpegWrapper.ffmpegOwOStream;
 
 
 public class Player implements Runnable {
 
-    static SongBoard sb;
-    static boolean autoplay = true;
-    static boolean paused = false;
+    public static SongBoard sb;
+    public static boolean autoplay = true;
+    public static boolean paused = false;
     static boolean prevRequest = false;
     static boolean nextRequest = false;
     static boolean forceWait = false;
@@ -19,9 +23,9 @@ public class Player implements Runnable {
     public static String ffprobeBinary;
 
     // the thing that plays audio
-    static Mouth mouth;
+    public static Mouth mouth;
     static Thread mouthThread;
-    static float defaultVolume = -10;
+    public static float defaultVolume = -10;
 
 
     /**
@@ -268,10 +272,10 @@ public class Player implements Runnable {
     }
 
 
-    class Mouth implements Runnable {
+    public class Mouth implements Runnable {
 
         private String fileName;
-        boolean useStreaming;
+        public boolean useStreaming;
         boolean preferStreaming;
 
         boolean goDieNow = false;
@@ -348,94 +352,7 @@ public class Player implements Runnable {
         }
 
 
-        /**
-         * Transcode audio file to wav PCM s16le "file" using ffmpeg.
-         * @param fileName directory of file
-         * @return byte array
-         */
-        static byte[] ffmpegOwO(String fileName) {
-            ProcessBuilder processBuilder;
-            Process ff = null;
 
-            InputStream streamOutOfProcess;
-
-            try {
-                processBuilder = new ProcessBuilder(ffmpegBinary, "-i" , fileName, "-f", "wav", "pipe:1");
-                ff = processBuilder.start();
-
-                BufferedReader reader = new BufferedReader(new InputStreamReader(ff.getErrorStream()));
-                streamOutOfProcess = ff.getInputStream();
-
-                // handle ffmpeg output
-                Thread printThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        reader.lines().forEach(line -> System.out.println(line));
-                    }
-                });
-                printThread.start();
-
-
-                ByteArrayOutputStream wah = new ByteArrayOutputStream();
-                streamOutOfProcess.transferTo(wah);
-
-                return wah.toByteArray();
-
-
-            } catch (IOException e) {
-                System.out.println("FFMPEG/PROCESS ERROR");
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
-        }
-
-
-        /**
-         * Transcode audio file to wav PCM s16le stream using ffmpeg.
-         * @param fileName directory of file
-         * @return stream
-         */
-        static InputStream ffmpegOwOStream(String fileName) {
-                final InputStream[] dataOut = {null};
-
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ProcessBuilder processBuilder;
-                        Process ff = null;
-
-                        InputStream streamOutOfProcess;
-
-                        try {
-                            processBuilder = new ProcessBuilder(ffmpegBinary, "-i", fileName, "-f", "wav", "pipe:1");
-                            ff = processBuilder.start();
-
-                            BufferedReader reader = new BufferedReader(new InputStreamReader(ff.getErrorStream()));
-                            streamOutOfProcess = ff.getInputStream();
-                            dataOut[0] = streamOutOfProcess;
-
-                            // handle ffmpeg output
-                            Thread printThread = new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    reader.lines().forEach(line -> System.out.println(line));
-                                }
-                            });
-                            printThread.start();
-
-                        } catch (IOException e) {
-                            System.out.println("FFMPEG/PROCESS ERROR");
-                            e.printStackTrace();
-                            throw new RuntimeException(e);
-                        }
-                    } // run
-                });
-                thread.start();
-
-                // hope err... I mean ensure we do not return before ffmpeg stream initiated
-                try {Thread.sleep(500);} catch (Exception e) {e.printStackTrace();}
-                return dataOut[0];
-        }
 
 
         /**

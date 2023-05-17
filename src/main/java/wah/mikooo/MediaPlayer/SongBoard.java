@@ -1,4 +1,6 @@
-package wah.mikooo;
+package wah.mikooo.MediaPlayer;
+
+import wah.mikooo.Utilities.FilesManagers;
 
 import java.util.Arrays;
 import java.util.LinkedList;
