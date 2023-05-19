@@ -118,7 +118,7 @@ public class SongBoard {
                 queue.add(0,prevQueue.remove(0));
             }
             catch (IndexOutOfBoundsException err) {
-                System.out.println("There is no more, cannot advance");
+                System.out.println("There is no more, cannot de-advance");
             }
         } // for
     }
@@ -163,6 +163,15 @@ public class SongBoard {
     public Song peekNext() {
         try {
             return queue.get(1);
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
+
+    public Song peekPrev() {
+        try {
+            return prevQueue.get(0);
         }
         catch (Exception e) {
             return null;
@@ -230,6 +239,33 @@ public class SongBoard {
             index++;
         }
         return display;
+    }
+
+
+
+
+
+    /**
+     * =========================
+     * Getters for indexes/sizes
+     * =========================
+     */
+
+    public int getCurrentQueueSize() {
+
+        return prevQueue.size() + queue.size();
+    }
+
+    public int getRemainingSize() {
+        return queue.size() - 1;
+    }
+
+    /**
+     * Retrives the index of the currently playing song
+     * @return
+     */
+    public int getCurrentIndex() {
+        return getCurrentQueueSize() - getRemainingSize() + 1; // current index == pased index + 1
     }
 
 

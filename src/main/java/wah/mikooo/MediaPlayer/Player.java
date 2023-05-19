@@ -11,13 +11,14 @@ import static wah.mikooo.ffmpegStuff.ffmpegWrapper.ffmpegOwOStream;
 
 
 public class Player implements Runnable {
-
+    // these are all static until i make a proper ui
     public static SongBoard sb;
-    public static boolean autoplay = true;
-    public static boolean paused = false;
-    static boolean prevRequest = false;
+    public static boolean autoplay = true; // play next song after end
+    public static boolean paused = false; // paused status
+    static boolean prevRequest = false; // request for a next/prev command
     static boolean nextRequest = false;
-    static boolean forceWait = false;
+    static boolean forceWait = false; // force dispatcher to wait
+    boolean prevIsRestart = false; // previous command restarts song from beginning
 
     public static String ffmpegBinary;
     public static String ffprobeBinary;
@@ -60,6 +61,31 @@ public class Player implements Runnable {
 
 
     /**
+     * Notify everything
+     */
+    public synchronized void forceRecheck() {
+        notifyAll();
+        try {
+            if (!mouth.playing) { // will deadlock if called and mouth is not in wait
+                mouth.ayoWakeUp();
+            }
+        }
+        catch (Exception e ) {
+//            e.printStackTrace();
+            System.out.println("mouth is null lol");
+        }
+
+        Main.ui.draw();
+    }
+
+
+    /**
+     * =========================
+     * INTERFACE FUNCTIONALITIES
+     * =========================
+     */
+
+    /**
      * Set volume.
      * Artificially limited at +5db
      * @param volume
@@ -76,24 +102,6 @@ public class Player implements Runnable {
         gainControl.setValue(volume);
 
         defaultVolume = volume;
-    }
-
-    /**
-     * Notify everything
-     */
-    public synchronized void forceRecheck() {
-        notifyAll();
-        try {
-            if (!mouth.playing) { // will deadlock if called and mouth is not in wait
-                mouth.ayoWakeUp();
-            }
-        }
-        catch (Exception e ) {
-//            e.printStackTrace();
-            System.out.println("mouth is null lol");
-        }
-
-        Main.ui.draw();
     }
 
 
@@ -156,6 +164,44 @@ public class Player implements Runnable {
 
 
     /**
+     * Jump to a position in the queue
+     * @param targetIndex
+     */
+    public void jumpto(int targetIndex) {
+        int indexesToJump = targetIndex - sb.getCurrentIndex();
+
+        if (indexesToJump > sb.getCurrentQueueSize() || indexesToJump < (sb.getCurrentIndex() - 1)) {
+            throw new IndexOutOfBoundsException("Cannot jump to index " + targetIndex + ", max " + sb.getCurrentQueueSize() + ", min " + (sb.getCurrentIndex() - 1));
+        }
+        if (indexesToJump == 0) {
+            // do nothing
+            return;
+        }
+        else if (indexesToJump > 0) { // skipping 1 song is equivalent to calling next
+            while (indexesToJump > 1) {
+                sb.getNext(); // this next function does not dispatch mouth
+                indexesToJump --;
+            }
+            next(); // when there is one song to skip left, call the next command to start playing
+        }
+
+        else if (indexesToJump < 0) { // skipping 1 song is equivalent to calling next
+            while (indexesToJump < -1) {
+                sb.getPrev(); // this next function does not dispatch mouth
+                indexesToJump --;
+            }
+            prev(); // when there is one song to skip left, call the next command to start playing
+        }
+
+    }
+
+
+
+
+
+
+
+    /**
      * Handle dispatching mouth thread.
      * This was a great idea theoretical, however in practice it
      * is just messy and very, VERY error-prone. Wah.
@@ -183,6 +229,8 @@ public class Player implements Runnable {
                 System.out.println("LEAVING primary wait case");
                 break inner;
             }
+
+            System.out.println("skipped primary wait");
 
 
 
@@ -219,16 +267,20 @@ public class Player implements Runnable {
                             System.out.println("Paused, time for primary wait");
                             break inner;
                         } else if (prevRequest) {
-                            System.out.println("enter prev");
-                            System.out.println(sb.getPrev().path + " (autoplaying)");
+                            if (sb.peekPrev() != null && prevIsRestart) {
+                                System.out.println(sb.getPrev().path + " (prev requested)");
+                            }
                             prevRequest = false;
+                            nextRequest = false;
+                            mouth.kill();
                             break inner;
 
-                        } else { // assume reached end of song, dispatch song next loop run (easier understood than explained idk)
+                        } else if (nextRequest) { // assume reached end of song, dispatch song next loop run (easier understood than explained idk)
                             if (sb.peekNext() != null) {
-                                System.out.println(sb.getNext().path + " (autoplaying)");
+                                System.out.println(sb.getNext().path + " (next requested)");
                             }
                             nextRequest = false;
+                            prevRequest = false;
                            break inner;
                         }
                     }
