@@ -101,6 +101,7 @@ public class SongBoard {
             }
             catch (IndexOutOfBoundsException err) {
                 System.out.println("There is no more, cannot advance");
+                throw new IndexOutOfBoundsException("There is no more, cannot advance (next queue is empty)");
             }
         } // for
     }
@@ -119,6 +120,7 @@ public class SongBoard {
             }
             catch (IndexOutOfBoundsException err) {
                 System.out.println("There is no more, cannot de-advance");
+                throw new IndexOutOfBoundsException("There is no more, cannot de-advance (prev queue is empty)");
             }
         } // for
     }
@@ -129,8 +131,8 @@ public class SongBoard {
      * @return song (not really used at the moment)
      */
     public Song getNext() {
-        advance(1);
         try {
+            advance(1);
             return queue.get(0);
         }
         catch (IndexOutOfBoundsException err) {
@@ -145,12 +147,12 @@ public class SongBoard {
      * @return song (not really used at the moment)
      */
     public Song getPrev() {
-        deAdvance(1);
         try {
+            deAdvance(1);
             return queue.get(0);
         }
         catch (IndexOutOfBoundsException err) {
-            System.out.println("The queue is empty, there are no previous songs");
+            System.out.println("The previous songs queue is empty, there are no previous songs");
             return null;
         }
     }
@@ -241,6 +243,13 @@ public class SongBoard {
         return display;
     }
 
+    public List<Song> getNextQueue() {
+        return queue;
+    }
+
+    public List<Song> getPrevQueue() {
+        return prevQueue;
+    }
 
 
 

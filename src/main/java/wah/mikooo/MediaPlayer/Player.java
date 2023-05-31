@@ -18,7 +18,7 @@ public class Player implements Runnable {
     static boolean prevRequest = false; // request for a next/prev command
     static boolean nextRequest = false;
     static boolean forceWait = false; // force dispatcher to wait
-    boolean prevIsRestart = false; // previous command restarts song from beginning
+    boolean prevIsRestart = true; // previous command restarts song from beginning
 
     public static String ffmpegBinary;
     public static String ffprobeBinary;
@@ -170,15 +170,18 @@ public class Player implements Runnable {
     public void jumpto(int targetIndex) {
         int indexesToJump = targetIndex - sb.getCurrentIndex();
 
-        if (indexesToJump > sb.getCurrentQueueSize() || indexesToJump < (sb.getCurrentIndex() - 1)) {
+        if (indexesToJump > sb.getCurrentQueueSize() || indexesToJump  + sb.getCurrentQueueSize() < 1) {
             throw new IndexOutOfBoundsException("Cannot jump to index " + targetIndex + ", max " + sb.getCurrentQueueSize() + ", min " + (sb.getCurrentIndex() - 1));
         }
+
+//        System.out.println("JUMPING THIS MANY INDEXES " + indexesToJump  + "' FROM " + sb.getCurrentIndex());
         if (indexesToJump == 0) {
             // do nothing
+//            System.out.println("Jumping finished " + sb.getCurrentlyPlaying().path);
             return;
         }
         else if (indexesToJump > 0) { // skipping 1 song is equivalent to calling next
-            while (indexesToJump > 1) {
+            while (indexesToJump > 0) {
                 sb.getNext(); // this next function does not dispatch mouth
                 indexesToJump --;
             }
@@ -193,6 +196,8 @@ public class Player implements Runnable {
             prev(); // when there is one song to skip left, call the next command to start playing
         }
 
+
+//        System.out.println("Jumping finished " + sb.getCurrentlyPlaying().path);
     }
 
 
@@ -267,7 +272,7 @@ public class Player implements Runnable {
                             System.out.println("Paused, time for primary wait");
                             break inner;
                         } else if (prevRequest) {
-                            if (sb.peekPrev() != null && prevIsRestart) {
+                            if (sb.peekPrev() != null && !prevIsRestart) {
                                 System.out.println(sb.getPrev().path + " (prev requested)");
                             }
                             prevRequest = false;

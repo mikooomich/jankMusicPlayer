@@ -9,8 +9,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
-
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
 
 
 public class AWTbs extends JFrame {
@@ -130,15 +134,95 @@ public class AWTbs extends JFrame {
         // Create the panel for the right half of the screen
         JPanel rightPanel = new JPanel(new BorderLayout());
 
+        /**
+         * Previous songs
+         */
         // Create the two selectable lists
-        JList<String> list1 = new JList<>(Player.sb.printPrev());
-        JList<String> list2 = new JList<>(Player.sb.printNext());
+        int indexofSong = 0;
+        List<SongButton> prevSongsAsButtons = new ArrayList<>();
+
+        for (Song s: Player.sb.getPrevQueue()) {
+            prevSongsAsButtons.add(new SongButton(indexofSong, s.path, interfaceLink.getPlayer()));
+            indexofSong++;
+        }
 
 
-        JScrollPane l1scrl = new JScrollPane(list1);
-        l1scrl.setPreferredSize(new Dimension(600, 270));
-        JScrollPane l2scrl = new JScrollPane(list2);
-        l2scrl.setPreferredSize(new Dimension(600, 270));
+        // Create the two selectable lists
+        JTable table1; // previous songs
+        DefaultTableModel tableModel;
+
+        tableModel = new DefaultTableModel();
+        tableModel.addColumn("Name"); // Add column header
+
+        for (SongButton wah : prevSongsAsButtons) {
+            tableModel.addRow(new Object[]{wah.alias}); // Add row data
+        }
+
+        table1 = new JTable(tableModel);
+        table1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        table1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    int selectedRow = table1.getSelectedRow();
+                    if (selectedRow >= 0) {
+                        SongButton selectedWah = prevSongsAsButtons.get(selectedRow);
+                        selectedWah.doAction();
+                    }
+                }
+            }
+        });
+
+        JScrollPane scrollPane1 = new JScrollPane(table1);
+        scrollPane1.setPreferredSize(new Dimension(600, 270));
+
+// Add the scroll pane to the panel
+        rightPanel.add(scrollPane1, BorderLayout.NORTH);
+
+
+        /**
+         * Next songs
+         */
+        indexofSong++; // skip current song
+
+        List<SongButton> nextongsAsButtons = new ArrayList<>();
+
+        for (Song s: Player.sb.getNextQueue()) {
+            nextongsAsButtons.add(new SongButton(indexofSong, s.path, interfaceLink.getPlayer()));
+            indexofSong++;
+        }
+
+
+
+        JList<String> list2; // next songs
+        DefaultListModel<String> listModelNext;
+
+        listModelNext = new DefaultListModel<>();
+        for (SongButton wah : nextongsAsButtons) {
+            listModelNext.addElement(wah.alias);
+        }
+
+        list2 = new JList<>(listModelNext);
+        list2.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        list2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int index = list2.locationToIndex(evt.getPoint());
+                if (index >= 0) {
+                    SongButton selectedWah = nextongsAsButtons.get(index);
+                    selectedWah.doAction();
+                }
+            }
+        });
+
+
+
+
+//        JScrollPane prevSongs = new JScrollPane(list1);
+//        prevSongs.setPreferredSize(new Dimension(600, 270));
+        JScrollPane nextSongs = new JScrollPane(list2);
+        nextSongs.setPreferredSize(new Dimension(600, 270));
 
 
         // Create the text printout
@@ -188,10 +272,10 @@ public class AWTbs extends JFrame {
         textArea.setText("<html>"+statusText+"</html>");
 
         // Add the two lists and the text printout to the panel
-        rightPanel.add(l1scrl, BorderLayout.NORTH);
+//        rightPanel.add(prevSongs, BorderLayout.NORTH);
         rightPanel.add(textArea, BorderLayout.CENTER);
         rightPanel.add(imagePanel, BorderLayout.EAST);
-        rightPanel.add(l2scrl, BorderLayout.SOUTH);
+        rightPanel.add(nextSongs, BorderLayout.SOUTH);
         add(rightPanel, BorderLayout.CENTER);
 
         // Create the panel for the left half of the screen
