@@ -13,20 +13,20 @@ import static wah.mikooo.ffmpegStuff.ffmpegWrapper.ffmpegOwOStream;
 public class Player implements Runnable {
     // these are all static until i make a proper ui
     public static SongBoard sb;
-    public static boolean autoplay = true; // play next song after end
+    public static boolean autoplay = Boolean.parseBoolean(Main.config.retrieve("autoplay")); // play next song after end
     public static boolean paused = false; // paused status
     static boolean prevRequest = false; // request for a next/prev command
     static boolean nextRequest = false;
     static boolean forceWait = false; // force dispatcher to wait
     boolean prevIsRestart = true; // previous command restarts song from beginning
 
-    public static String ffmpegBinary;
-    public static String ffprobeBinary;
+    public static String ffmpegBinary = Main.config.retrieve("ffmpeg");
+    public static String ffprobeBinary = Main.config.retrieve("ffprobe");
 
     // the thing that plays audio
     public static Mouth mouth;
     static Thread mouthThread;
-    public static float defaultVolume = -10;
+    public static float defaultVolume = Float.parseFloat(Main.config.retrieve("volume"));
 
 
     /**

@@ -28,7 +28,8 @@ public class ffmpegWrapper {
             Thread printThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    reader.lines().forEach(line -> System.out.println(line));
+//                    reader.lines().forEach(line -> System.out.println(line));
+                    reader.lines().forEach(line -> line.compareTo("e"));
                 }
             });
             printThread.start();
@@ -77,7 +78,8 @@ public class ffmpegWrapper {
                     Thread printThread = new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            reader.lines().forEach(line -> System.out.println(line));
+//                            reader.lines().forEach(line -> System.out.println(line));
+                            reader.lines().forEach(line -> line.compareTo("e"));
                         }
                     });
                     printThread.start();

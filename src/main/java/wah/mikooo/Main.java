@@ -3,6 +3,7 @@ package wah.mikooo;
 import wah.mikooo.MediaPlayer.Player;
 import wah.mikooo.MediaPlayer.SongBoard;
 import wah.mikooo.Ui.AWTbs;
+import wah.mikooo.Utilities.Configurator;
 
 import javax.sound.sampled.*;
 import java.io.*;
@@ -14,6 +15,7 @@ public class Main  {
     static Thread playerThread;
     static Thread uiThread;
     public static AWTbs ui;
+    public static Configurator config;
 
 
     public Main() throws UnsupportedAudioFileException, IOException, LineUnavailableException, InterruptedException {
@@ -30,6 +32,9 @@ public class Main  {
             }
             System.out.println("cmd");
 
+            /**
+             * Command line "ui". Not updated.
+             */
             switch (cmd) {
                 case "exit":
                     System.out.println("Terminating requested by user");
@@ -79,8 +84,11 @@ public class Main  {
 
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         System.out.println("Hewwo world!");
+
+        config = new Configurator();
+
 
         try {
 

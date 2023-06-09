@@ -1,6 +1,6 @@
 package wah.mikooo.Utilities;
 
-import wah.mikooo.MediaPlayer.Player;
+import wah.mikooo.Main;
 import wah.mikooo.MediaPlayer.Song;
 import wah.mikooo.ffmpegStuff.MetadataExtractor;
 
@@ -11,24 +11,17 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class FilesManagers {
-    public static final int MAX_SCANNER_THREADS = 4;
-    public static final long MAX_SCAN_TIME = 5;
-    public static boolean CLEAN_SCAN = true;
-    List<Song> availFiles;
-    static final boolean recursive = false;
-    static final String libraryPath = "./stronghold";
+    public static final int MAX_SCANNER_THREADS = Integer.parseInt(Main.config.retrieve("max_scanner_threads"));
+    public static final long MAX_SCAN_TIME = Integer.parseInt(Main.config.retrieve("max_scan_time_seconds"));
+    public static boolean CLEAN_SCAN = Boolean.parseBoolean(Main.config.retrieve("clean_scan"));
+    static final boolean recursive = Boolean.parseBoolean(Main.config.retrieve("recursive_scan"));
+    static final String libraryPath = Main.config.retrieve("library_path");
+
+    List<Song> availFiles; // data structure of all songs scanned
 
 
     public FilesManagers() {
         availFiles = new ArrayList<>();
-//        if ( found custom ffpmeg) {
-//            Player.ffmpegBinary = from config;
-//        }
-//        else {
-            System.out.println("Setting player to use system path ffmpeg");
-            Player.ffmpegBinary = "ffmpeg";
-            Player.ffprobeBinary = "ffprobe";
-//        }
 
         if (!new File(libraryPath).exists()) {
             new File(libraryPath).mkdir();

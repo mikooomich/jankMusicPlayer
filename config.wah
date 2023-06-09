@@ -1,0 +1,19 @@
+version=0.0.1
+# Hi. equal sign (=) separates the key and value. Hashtag (#) AT THE BEGINNING OF THE LINE signifies a comment.
+
+
+# scanner and file management
+max_scanner_threads=4
+max_scan_time_seconds=5
+clean_scan=true
+recursive_scan=false
+library_path=./stronghold
+
+# FFMpeg config. Provide path (incl binary) or leave as is to call system FFMpeg. FFProbe is required.
+ffmpeg=ffmpeg
+ffprobe=ffprobe
+
+# audio controls (persistent settings)
+autoplay=true
+previous_button_replays_before_seconds=10
+volume=-10

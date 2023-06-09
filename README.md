@@ -28,10 +28,10 @@ However, playing a WAV file converted cia FFMpeg terminal commands is fine. IDK.
 
 
 ## Notes
-- Music library path, recursive scanning, FFMpeg, etc., is currently hardcoded until a config system is implemented.
+- Music library path, recursive scanning, FFMpeg, etc., is configurable in config.wah.
 - The GUI is very pretty and *totally* not extremely proof of concept.
 - Tested with the version [latest FFMpeg dev build](https://www.gyan.dev/ffmpeg/builds/). As of the time of writing, 2023-05-15-git-2953ebe7b6. 
-- Using older versions may or may not cause issues. Ex. 5.1.2 may cause such as metadata image extraction deadlock... or others.
+- Using older versions may or may not cause issues. Ex. 5.1.2 may cause such as metadata image extraction deadlock... or other random issues.
 
 
 ### Error codes (Song validity status)
