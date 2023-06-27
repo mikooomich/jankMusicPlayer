@@ -25,7 +25,7 @@ public class Song {
     public int sampleRate;
     public String channel;
     public String genre;
-    public String length;
+    public long length;
     public int bitrate; // kb/s
     public BufferedImage albumArt;
 

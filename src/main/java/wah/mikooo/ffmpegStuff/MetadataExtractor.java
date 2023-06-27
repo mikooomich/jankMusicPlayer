@@ -101,7 +101,20 @@ public class MetadataExtractor implements Callable<Integer> {
                         } else if (line.contains("Duration")) {
                             String[] parsed = line.split(", ");
 
-                            target.length = parsed[0].trim().split(" ")[1].trim();
+
+                            String raw = parsed[0].trim().split(" ")[1].trim().replace(".", ":");
+                            String[] cleaned = raw.split(":");
+                            long lengthMS = 0;
+                            for (int i = 0; i < cleaned.length; i++) {
+                                switch (i) {
+                                    case 0: lengthMS += Long.parseLong(cleaned[i]) *60 * 60 *1000; break; // hours
+                                    case 1: lengthMS += Long.parseLong(cleaned[i]) *60 *1000; break; // minutes
+                                    case 2: lengthMS += Long.parseLong(cleaned[i]) *1000; break; // seconds
+                                    case 3: lengthMS += Long.parseLong(cleaned[i]); break; // seconds
+                                }
+                            }
+
+                            target.length = lengthMS;
                             target.bitrate = Integer.parseInt(parsed[2].split(" ")[1]);
                         } else if (line.contains("Audio:") && line.contains("Stream")) {
                             if (target.codec.isEmpty()) { // only take metadata of first audio track if many are available
