@@ -1,6 +1,7 @@
 package wah.mikooo.ffmpegStuff;
 
 import wah.mikooo.Exceptions.MetadataExtractorException;
+import wah.mikooo.MediaPlayer.LrcReader;
 import wah.mikooo.MediaPlayer.Song;
 
 import javax.imageio.ImageIO;
@@ -134,6 +135,17 @@ public class MetadataExtractor implements Callable<Integer> {
             } catch (MetadataExtractorException e) {
                 System.out.println(e.getMessage());
                 return 20;
+            }
+
+
+            // read sync lyrics file if applicable
+            try {
+                target.setLyrics(new LrcReader(target.path));
+            }
+            catch (Exception e) {
+                System.out.println("There was an error reading the lyric file for " + target.path + ", skipping");
+                target.setLyrics(null);
+                e.printStackTrace();
             }
 
         } catch (IOException e) {

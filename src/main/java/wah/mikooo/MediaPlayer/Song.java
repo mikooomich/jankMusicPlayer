@@ -29,6 +29,9 @@ public class Song {
     public int bitrate; // kb/s
     public BufferedImage albumArt;
 
+    // lyrics
+    private LrcReader lyrics;
+
     /**
      * Construct a Song given a file path (assuming it has an audio stream). This will also parse metadata and album art.
      * @param path
@@ -73,5 +76,23 @@ public class Song {
      */
     public void setValidity(int statusCode) {
         status = statusCode;
+    }
+
+    /**
+     * Return sync lyrics object
+     * @return
+     */
+    public LrcReader getLyrics() {
+        return lyrics;
+    }
+
+
+    /**
+     * Set sync lyrics object
+     * @return
+     */
+    public void setLyrics(LrcReader newLyrics) {
+        // maybe in the future only allow one write
+        lyrics = newLyrics;
     }
 }
