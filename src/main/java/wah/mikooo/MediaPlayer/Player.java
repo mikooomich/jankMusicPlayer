@@ -201,6 +201,21 @@ public class Player implements Runnable {
     }
 
 
+    /**
+     * Jump to a part in the song
+     * @param ms Milliseconds since the current position of the song
+     */
+    public void seekTo(int ms) {
+        try {
+            mouth.seekInSong(ms);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("very bad error when seeking");
+        }
+    }
+
+
 
 
 
@@ -332,14 +347,20 @@ public class Player implements Runnable {
     public class Mouth implements Runnable {
 
         private String fileName;
+        private long length; // song length in ms
         public boolean useStreaming;
         boolean preferStreaming;
 
         boolean goDieNow = false;
         boolean atEnd = false;
         boolean playing = false;
+        boolean hotRestart = false;
 
         SourceDataLine line;
+        AudioInputStream aas = null;
+
+        int totalBytes = 0; // total bytes "played"
+
 
         /**
          * Create a Mouth
@@ -358,6 +379,7 @@ public class Player implements Runnable {
 
 
             fileName = path.path;
+            length = path.length;
             mouthThread = new Thread(this);
             mouthThread.start();
         }
@@ -456,7 +478,7 @@ public class Player implements Runnable {
 
 
             try {
-                AudioInputStream aas = null;
+
                 if (audioFile == null) { // streaming fallback
                     System.out.println("Using direct streaming");
                     int attempts = 1;
@@ -528,7 +550,7 @@ public class Player implements Runnable {
                         playing = true;
                         continue; // avoid playing sound if still paused
                     }
-
+                    totalBytes += bytesRead;
                     line.write(buffer, 0, bytesRead);
                 }
 
@@ -545,6 +567,19 @@ public class Player implements Runnable {
                 line.stop();
                 System.out.println(3);
                 line.close();
+                aas = null;
+
+
+                // restart from beginning. Instead of returning to dispatcher
+                // Intended for seek use
+                if (hotRestart) {
+                    System.out.println("HOT RESTARTING THE AUDIO");
+                    hotRestart = false;
+                    goDieNow = false;
+                    atEnd = false;
+                    playing = false;
+                    audioSession();
+                }
 
 
                 System.out.println("Mouth is going to shut up forever now");
@@ -564,5 +599,82 @@ public class Player implements Runnable {
         }
 
 
-    }
+
+
+
+        /**
+         * Seek relative to current place in track
+         * @param ms Time in milliseconds
+         */
+        public void seekInSong(int ms) throws Exception {
+            if (ms > 0) {
+                fastFwd(ms, aas.getFormat().getFrameSize(), aas.getFormat().getFrameRate());
+            }
+            else {
+                rewind(ms, aas.getFormat().getFrameSize(), aas.getFormat().getFrameRate());
+            }
+
+
+        }
+
+
+        /**
+         * Seek FORWARD relative to current place in track
+         * @param ms Time in milliseconds
+         * @param frameSize AKA bytes per frame
+         * @param frameRate AKA sample rate
+         * @throws Exception
+         */
+        private void fastFwd(long ms, int frameSize, float frameRate) throws Exception {
+            // #bytes (position) = time (seconds) * bytes per frame * sample rate
+            long bytePosition = (ms * frameSize * (int) frameRate)/1000;
+
+//            System.out.println("frame size" +frameSize + " frame rate " + frameRate);
+//            System.out.println("length is " + length + "   cur pos " + currentPosMs  + " result = " + (currentPosMs + ms) + "total bytes already played" +totalBytes);
+            while (aas == null && !goDieNow) {
+                // blocking until valid audio session
+                Thread.sleep(100);                 // this looks like a deadlock possibility? Allow goDieNow as a force exit?
+            }
+           System.out.println("skipped" + aas.skip(bytePosition));
+        }
+
+
+        /**
+         * Seek BACKWARD relative to current place in track
+         * @param ms Time in milliseconds
+         * @param frameSize AKA bytes per frame
+         * @param frameRate AKA sample rate
+         * @throws Exception
+         */
+        private void rewind(long ms, int frameSize, float frameRate) throws Exception {
+            /**
+             * Basically due to the limits of DataLine (or my knowledge of it)
+             * The easiest way to implement a rewind is to restart the audio stream and seek forward
+             */
+
+
+            // calculate where to jump to
+            long currentPosMs = (long) (totalBytes/ frameSize / frameRate*1000);
+//            System.out.println("current bytes position   " +totalBytes + "current position (ms)  " + currentPosMs );
+
+            // hot restart the player
+            hotRestart = true;
+            kill();
+
+            System.out.println("frame size" +frameSize + " frame rate " + frameRate);
+            System.out.println("length is " + length + "   cur pos " + currentPosMs  + " result = " + (currentPosMs + ms) + "total bytes " + totalBytes);
+
+            if (length <= 0 || currentPosMs + ms > length) {
+                // skip to next song/restart current if OOB
+                return;
+            }
+            else {
+                totalBytes = 0; // reset odometer
+                fastFwd(currentPosMs + ms, frameSize, frameRate);
+            }
+        }
+
+
+    } // mouth
+
 }

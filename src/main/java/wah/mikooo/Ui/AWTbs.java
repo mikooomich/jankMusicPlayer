@@ -78,6 +78,28 @@ public class AWTbs extends JFrame {
         });
 
 
+        JButton seekButton = new JButton("seekfwd");
+        seekButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("10sec fwd");
+                interfaceLink.getPlayer().seekTo(-10000);
+                draw();
+            }
+        });
+
+
+        JButton seekButtonBACK = new JButton("seekbck");
+        seekButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("10sec back");
+                interfaceLink.getPlayer().seekTo(10000);
+                draw();
+            }
+        });
+
+
         JButton addALLButton = new JButton("queue all");
         addALLButton.addActionListener(new ActionListener() {
             @Override
@@ -107,6 +129,8 @@ public class AWTbs extends JFrame {
         navBar.add(pauseButton);
         navBar.add(nextButton);
         navBar.add(addALLButton);
+        navBar.add(seekButton);
+        navBar.add(seekButtonBACK);
         navBar.add(forceRefreshUi);
         add(navBar, BorderLayout.SOUTH);
 
