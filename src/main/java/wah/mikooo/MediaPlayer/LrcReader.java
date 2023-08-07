@@ -6,6 +6,12 @@ import java.util.List;
 
 public class LrcReader {
 
+
+    private static final long LYRIC_MS_DELAY = 500;
+    boolean paused = false;
+    boolean alive = false;
+
+
     /**
      * Sync lyric (lrc) file representation
      */
@@ -40,10 +46,9 @@ public class LrcReader {
     }
 
 
-
-
     private List<LyricEntry> data; // main data structure
-
+    private Thread lrcThread; // lyric "printer"
+    private long currTstmp = 0; // current position in song
 
     /**
      * Read the corresponding lrc file given the song. Lrc must be in the same directory as the song.
@@ -52,9 +57,17 @@ public class LrcReader {
      */
     public LrcReader(String path) throws IOException {
         data = new ArrayList<>();
-        System.out.println("Starting read of: " + path);
+        System.out.println("Trying to read lyric file for: " + path);
 
-        BufferedReader configRead = new BufferedReader(new FileReader(getCorrespondingLRCpath(path)));
+        BufferedReader configRead;
+        try {
+            configRead = new BufferedReader(new FileReader(getCorrespondingLRCpath(path)));
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("WARNING: No lrc found for: " + path);
+            data = null;
+            return;
+        }
 
         try {
             String lineData = configRead.readLine();
@@ -122,8 +135,160 @@ public class LrcReader {
         return songPath + ".lrc";
     }
 
+
     /**
-     * debug list printer
+     *
+     *  Lyric "printer" functions
+     *
+     */
+
+
+    /**
+     * Print the lyric
+     *
+     * @param timeStamp ms (millisecond) to look up
+     * @return
+     * @throws InterruptedException
+     */
+    private long doPrint(long timeStamp) throws InterruptedException {
+        LyricEntry lyric = lookupLyric(timeStamp);
+        System.out.println(lyric.lyric + "(" + lyric.timestampMS + ")");
+
+        // advance song odometer
+        int index = data.indexOf(lyric);
+        if (index < data.size() - 1) {
+            // time to wait = next timestamp - current
+           return (data.get(index + 1).timestampMS) - (lyric.timestampMS); // return next lyric
+        }
+        return Long.MAX_VALUE; // last lyric, show infinitely
+    }
+
+
+    /**
+     * Retrieve the current lyric
+     * @param timeStamp ms (millisecond) to look up
+     * @return
+     */
+    private LyricEntry lookupLyric(long timeStamp) {
+
+        if (timeStamp < 0) {
+            throw new IndexOutOfBoundsException("Timestamp cannot be negative");
+        }
+
+        System.out.println("\nLOOKING UP: " + timeStamp);
+        LyricEntry currentLyric = null;
+
+        // find the last lyric <= the timeStamp
+        for (LyricEntry entry : data) {
+            if (entry.timestampMS > (timeStamp + LYRIC_MS_DELAY)) { // may require ms delay for synchronization with audio
+                if (currentLyric == null) {
+                    currentLyric = entry;
+                }
+                break;
+            }
+            currentLyric = entry;
+        }
+
+        return currentLyric;
+    }
+
+
+    /**
+     * This method spawns a new thread that automatically shows the next lyric when it is time
+     * Will keep printing until it is stopped by thread interrupt
+     */
+    public void lrcPrinter() {
+
+        lrcThread = new Thread(new Runnable() {
+            @Override
+            public synchronized void run() {
+
+                try {
+                    while (alive) {
+                        while (!paused) {
+                            // This double loop serves no purpose because "resumes" are now treated as "start"
+                            // I guess it won't hurt to keep it here...
+
+                            long waitTime = doPrint(currTstmp);
+                            currTstmp += waitTime;
+                            wait(waitTime);
+                        }
+
+                        paused = true;
+                    } // outer while
+                } catch (InterruptedException e) {
+                    System.out.println("DEBUG: LRC printer is exiting");
+                    return;
+                }
+
+                System.out.println("DEBUG: LRC printer is exiting");
+            } // run
+        }); // thread
+        lrcThread.start();
+    }
+
+
+
+    /**
+     * Start a new lrcPrinter session
+     * This method also kills the old session with killSession()
+     */
+    public void startSession() {
+        if (data == null) {
+            System.out.println("Song has no lyrics, exiting lyric printer");
+            return;
+        }
+        // reset odometer
+        if (currTstmp >= Long.MAX_VALUE) {
+            currTstmp = 0;
+        }
+
+
+        // kill old session, reset flags
+        killSession();
+        paused = false;
+        alive = true;
+
+        lrcPrinter();
+    }
+
+    /**
+     * Pause lyric printer
+     *
+     * @param timeStamp timestamp (in ms) to save to odometer
+     */
+    public void pause(long timeStamp) {
+        killSession();
+        currTstmp = timeStamp; // save current place
+    }
+
+    /**
+     * Resume printer.
+     * This is the same as startSession, but doesn't do anything if session is playing
+     */
+    public void resume() {
+        if (!paused) {
+            return;
+        }
+
+        startSession();
+    }
+
+    /**
+     * Kill printer session by sending interrupt
+     */
+    public void killSession() {
+        if (lrcThread == null || !lrcThread.isAlive()) {
+            return;
+        }
+
+        lrcThread.interrupt();
+    }
+
+
+
+    /**
+     * for debugging data structure
      */
     private void printlist() {
         data.forEach(lyricEntry -> {

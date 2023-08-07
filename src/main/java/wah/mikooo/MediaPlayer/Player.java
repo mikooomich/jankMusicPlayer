@@ -112,7 +112,6 @@ public class Player implements Runnable {
         System.out.println("register play");
         paused = false;
 //        forceWait = false;
-
         forceRecheck();
     }
 
@@ -401,6 +400,7 @@ public class Player implements Runnable {
             if (line != null) {
                 line.close();
             }
+            sb.getCurrentlyPlaying().lyrics.killSession(); // kill lyric printer
         }
 
 
@@ -537,6 +537,8 @@ public class Player implements Runnable {
                 int bytesRead;
                 playing = true;
 
+                sb.getCurrentlyPlaying().lyrics.startSession(); // start lyric printer
+
                 // feed to audio system
                 while ((bytesRead = aas.read(buffer)) != -1) {
                     if (goDieNow) { // stop playing immediately
@@ -545,9 +547,14 @@ public class Player implements Runnable {
                     }
                     if (paused || forceWait) { // player requests pause
                         playing = false;
+
+                        // lol this ugly line gets the current position in song in milliseconds
+                        sb.getCurrentlyPlaying().lyrics.pause((long) (totalBytes / aas.getFormat().getFrameSize() / aas.getFormat().getFrameRate()*1000));
+
                         wait();
                         System.out.println("i awoke");
                         playing = true;
+                        sb.getCurrentlyPlaying().lyrics.resume(); // i truly hope that this doesn't become an issue where the the the if it decided to print lyrics if still paused. The alternative is spamming resume on *every* buffer copy
                         continue; // avoid playing sound if still paused
                     }
                     totalBytes += bytesRead;
@@ -635,7 +642,8 @@ public class Player implements Runnable {
                 // blocking until valid audio session
                 Thread.sleep(100);                 // this looks like a deadlock possibility? Allow goDieNow as a force exit?
             }
-           System.out.println("skipped" + aas.skip(bytePosition));
+            System.out.println("skipped" + aas.skip(bytePosition));
+            sb.getCurrentlyPlaying().lyrics.startSession();
         }
 
 
@@ -653,7 +661,7 @@ public class Player implements Runnable {
              */
 
 
-            // calculate where to jump to
+            // calculate current position in song
             long currentPosMs = (long) (totalBytes/ frameSize / frameRate*1000);
 //            System.out.println("current bytes position   " +totalBytes + "current position (ms)  " + currentPosMs );
 
@@ -671,6 +679,7 @@ public class Player implements Runnable {
             else {
                 totalBytes = 0; // reset odometer
                 fastFwd(currentPosMs + ms, frameSize, frameRate);
+                sb.getCurrentlyPlaying().lyrics.startSession();
             }
         }
 

@@ -30,7 +30,7 @@ public class Song {
     public BufferedImage albumArt;
 
     // lyrics
-    private LrcReader lyrics;
+    protected LrcReader lyrics;
 
     /**
      * Construct a Song given a file path (assuming it has an audio stream). This will also parse metadata and album art.
