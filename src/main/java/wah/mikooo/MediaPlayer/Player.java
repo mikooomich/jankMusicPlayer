@@ -1,7 +1,8 @@
 package wah.mikooo.MediaPlayer;
 
 
-import wah.mikooo.Main;
+
+import wah.mikooo.Ui.MainWindow;
 
 import javax.sound.sampled.*;
 import java.io.*;
@@ -13,20 +14,21 @@ import static wah.mikooo.ffmpegStuff.ffmpegWrapper.ffmpegOwOStream;
 public class Player implements Runnable {
     // these are all static until i make a proper ui
     public static SongBoard sb;
-    public static boolean autoplay = Boolean.parseBoolean(Main.config.retrieve("autoplay")); // play next song after end
+    public static boolean autoplay = Boolean.parseBoolean(MainWindow.config.retrieve("autoplay")); // play next song after end
     public static boolean paused = false; // paused status
     static boolean prevRequest = false; // request for a next/prev command
     static boolean nextRequest = false;
     static boolean forceWait = false; // force dispatcher to wait
+    static boolean USE_LYRICS = false;
     boolean prevIsRestart = true; // previous command restarts song from beginning
 
-    public static String ffmpegBinary = Main.config.retrieve("ffmpeg");
-    public static String ffprobeBinary = Main.config.retrieve("ffprobe");
+    public static String ffmpegBinary = MainWindow.config.retrieve("ffmpeg");
+    public static String ffprobeBinary = MainWindow.config.retrieve("ffprobe");
 
     // the thing that plays audio
     public static Mouth mouth;
     static Thread mouthThread;
-    public static float defaultVolume = Float.parseFloat(Main.config.retrieve("volume"));
+    public static float defaultVolume = Float.parseFloat(MainWindow.config.retrieve("volume"));
 
 
     /**
@@ -75,7 +77,6 @@ public class Player implements Runnable {
             System.out.println("mouth is null lol");
         }
 
-        Main.ui.draw();
     }
 
 
@@ -307,6 +308,7 @@ public class Player implements Runnable {
                 // wait unit next dispatch call
                 wait();
             } catch (InterruptedException e) {
+               System.exit(0); // assume interrupt means go terminate for now
                 throw new RuntimeException(e);
             }
 
@@ -322,6 +324,7 @@ public class Player implements Runnable {
         try {
             mouthDispatcher();
         } catch (InterruptedException e) {
+            System.exit(0); // assume interrupt means go terminate for now
             throw new RuntimeException(e);
         }
         System.out.println("Ending player thread");
@@ -343,6 +346,9 @@ public class Player implements Runnable {
     }
 
 
+
+
+
     public class Mouth implements Runnable {
 
         private String fileName;
@@ -356,10 +362,11 @@ public class Player implements Runnable {
         boolean hotRestart = false;
 
         SourceDataLine line;
-        AudioInputStream aas = null;
+        static AudioInputStream aas = null;
 
-        int totalBytes = 0; // total bytes "played"
+        static int totalBytes = 0; // total bytes "played"
 
+        Song currSong;
 
         /**
          * Create a Mouth
@@ -376,7 +383,7 @@ public class Player implements Runnable {
                this.preferStreaming = preferStreaming;
            }
 
-
+            currSong = path;
             fileName = path.path;
             length = path.length;
             mouthThread = new Thread(this);
@@ -391,6 +398,19 @@ public class Player implements Runnable {
             this(path, true, false);
         }
 
+
+        /**
+         * Get the current position in the song in miliseconds since beginning. -1 will be returned if there is no data
+         * @return
+         */
+        public static long getCurrentPosMs() {
+            // -1 is unavalible / no data
+            if (aas != null) {
+                return (long) (totalBytes/ aas.getFormat().getFrameSize() / aas.getFormat().getFrameRate()*1000);
+            }
+
+            return -1;
+        }
 
         /**
          * Send signal to stop talking
@@ -537,7 +557,20 @@ public class Player implements Runnable {
                 int bytesRead;
                 playing = true;
 
-                sb.getCurrentlyPlaying().lyrics.startSession(); // start lyric printer
+
+                // variable for hopefully performance
+                float frameRate = aas.getFormat().getFrameRate();
+                int frameSize = aas.getFormat().getFrameSize();
+                System.out.println(frameRate + "werfouihjweouifhjweofiujweoifwjefoiweojf" + frameSize);
+                long lastSecond = 0;
+                boolean lyricsEnabled = USE_LYRICS && sb.getCurrentlyPlaying().lyrics != null;
+
+
+                MainWindow.drawCenter();
+                if (lyricsEnabled && sb.getCurrentlyPlaying().lyrics != null) {
+                    sb.getCurrentlyPlaying().lyrics.startSession(); // start lyric printer
+                }
+                MainWindow.redrawTitles(); // update ui
 
                 // feed to audio system
                 while ((bytesRead = aas.read(buffer)) != -1) {
@@ -548,8 +581,10 @@ public class Player implements Runnable {
                     if (paused || forceWait) { // player requests pause
                         playing = false;
 
-                        // lol this ugly line gets the current position in song in milliseconds
-                        sb.getCurrentlyPlaying().lyrics.pause((long) (totalBytes / aas.getFormat().getFrameSize() / aas.getFormat().getFrameRate()*1000));
+                        // tell lyric player to stop
+                        if (lyricsEnabled) {
+                            sb.getCurrentlyPlaying().lyrics.pause(getCurrentPosMs());
+                        }
 
                         wait();
                         System.out.println("i awoke");
@@ -559,7 +594,19 @@ public class Player implements Runnable {
                     }
                     totalBytes += bytesRead;
                     line.write(buffer, 0, bytesRead);
+
+                    /**
+                     * Update player seek bar ever new second
+                     * I try to use variable instead of methods for speed lol
+                     * Save lasts second, trigger update every second
+                     */
+                    if (Math.floor((long) (totalBytes / frameSize / frameRate)) > lastSecond) {
+//                        System.out.println(totalBytes / frameSize / frameRate);
+                        MainWindow.updateSongPos(currSong);
+                        lastSecond = (long) Math.floor((long) (totalBytes / frameSize / frameRate));
+                    }
                 }
+
 
                 atEnd = true;
                 paused = false;
@@ -588,7 +635,7 @@ public class Player implements Runnable {
                     audioSession();
                 }
 
-
+                MainWindow.updateSongPos(currSong); // end of song, set ui to end
                 System.out.println("Mouth is going to shut up forever now");
                 forceRecheck();
             }
@@ -610,45 +657,49 @@ public class Player implements Runnable {
 
 
         /**
-         * Seek relative to current place in track
+         * Absolute seek to place in track
          * @param ms Time in milliseconds
          */
         public void seekInSong(int ms) throws Exception {
-            if (ms > 0) {
-                fastFwd(ms, aas.getFormat().getFrameSize(), aas.getFormat().getFrameRate());
+            long currentTime = getCurrentPosMs();
+
+            if (ms > currentTime) {
+                // Seeking forward requires RELATIVE OFFSET
+                System.out.println("JUMPING FWD to " + ms);
+                fastFwd(ms - currentTime , aas.getFormat().getFrameSize(), aas.getFormat().getFrameRate());
             }
             else {
+                // Seeking backward requires ABSOLUTE POSITION
+                System.out.println("JUMPING BACK to " + ms);
                 rewind(ms, aas.getFormat().getFrameSize(), aas.getFormat().getFrameRate());
             }
-
-
         }
 
 
         /**
-         * Seek FORWARD relative to current place in track
+         * Seek FORWARD RELATIVE to current place in track
          * @param ms Time in milliseconds
          * @param frameSize AKA bytes per frame
          * @param frameRate AKA sample rate
          * @throws Exception
          */
         private void fastFwd(long ms, int frameSize, float frameRate) throws Exception {
-            // #bytes (position) = time (seconds) * bytes per frame * sample rate
             long bytePosition = (ms * frameSize * (int) frameRate)/1000;
 
-//            System.out.println("frame size" +frameSize + " frame rate " + frameRate);
-//            System.out.println("length is " + length + "   cur pos " + currentPosMs  + " result = " + (currentPosMs + ms) + "total bytes already played" +totalBytes);
             while (aas == null && !goDieNow) {
                 // blocking until valid audio session
                 Thread.sleep(100);                 // this looks like a deadlock possibility? Allow goDieNow as a force exit?
             }
-            System.out.println("skipped" + aas.skip(bytePosition));
-            sb.getCurrentlyPlaying().lyrics.startSession();
+            totalBytes += bytePosition;
+            System.out.println("skipped (bytes)" + aas.skip(bytePosition));
+            if (USE_LYRICS) {
+                sb.getCurrentlyPlaying().lyrics.startSession();
+            }
         }
 
 
         /**
-         * Seek BACKWARD relative to current place in track
+         * Seek BACKWARD relative to ABSOLUTE POSITION in track
          * @param ms Time in milliseconds
          * @param frameSize AKA bytes per frame
          * @param frameRate AKA sample rate
@@ -662,8 +713,7 @@ public class Player implements Runnable {
 
 
             // calculate current position in song
-            long currentPosMs = (long) (totalBytes/ frameSize / frameRate*1000);
-//            System.out.println("current bytes position   " +totalBytes + "current position (ms)  " + currentPosMs );
+            long currentPosMs = getCurrentPosMs();
 
             // hot restart the player
             hotRestart = true;
@@ -672,14 +722,16 @@ public class Player implements Runnable {
             System.out.println("frame size" +frameSize + " frame rate " + frameRate);
             System.out.println("length is " + length + "   cur pos " + currentPosMs  + " result = " + (currentPosMs + ms) + "total bytes " + totalBytes);
 
-            if (length <= 0 || currentPosMs + ms > length) {
+            totalBytes = 0; // reset odometer
+            if (ms <= 0 || ms >= length) {
                 // skip to next song/restart current if OOB
                 return;
             }
             else {
-                totalBytes = 0; // reset odometer
-                fastFwd(currentPosMs + ms, frameSize, frameRate);
-                sb.getCurrentlyPlaying().lyrics.startSession();
+                fastFwd(ms, frameSize, frameRate);
+                if (USE_LYRICS) {
+                    sb.getCurrentlyPlaying().lyrics.startSession();
+                }
             }
         }
 

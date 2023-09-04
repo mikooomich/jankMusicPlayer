@@ -1,5 +1,7 @@
 package wah.mikooo.MediaPlayer;
 
+import wah.mikooo.Ui.MainWindow;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -153,6 +155,7 @@ public class LrcReader {
     private long doPrint(long timeStamp) throws InterruptedException {
         LyricEntry lyric = lookupLyric(timeStamp);
         System.out.println(lyric.lyric + "(" + lyric.timestampMS + ")");
+        MainWindow.drawCenter(lyric.lyric + "(" + lyric.timestampMS + ")");
 
         // advance song odometer
         int index = data.indexOf(lyric);
@@ -203,6 +206,7 @@ public class LrcReader {
             @Override
             public synchronized void run() {
 
+                MainWindow.drawCenter(); // clear old ui element
                 try {
                     while (alive) {
                         while (!paused) {

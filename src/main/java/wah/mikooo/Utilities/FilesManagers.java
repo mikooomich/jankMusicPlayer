@@ -1,7 +1,7 @@
 package wah.mikooo.Utilities;
 
-import wah.mikooo.Main;
 import wah.mikooo.MediaPlayer.Song;
+import wah.mikooo.Ui.MainWindow;
 import wah.mikooo.ffmpegStuff.MetadataExtractor;
 
 import java.io.File;
@@ -11,11 +11,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class FilesManagers {
-    public static final int MAX_SCANNER_THREADS = Integer.parseInt(Main.config.retrieve("max_scanner_threads"));
-    public static final long MAX_SCAN_TIME = Integer.parseInt(Main.config.retrieve("max_scan_time_seconds"));
-    public static boolean CLEAN_SCAN = Boolean.parseBoolean(Main.config.retrieve("clean_scan"));
-    static final boolean recursive = Boolean.parseBoolean(Main.config.retrieve("recursive_scan"));
-    static final String libraryPath = Main.config.retrieve("library_path");
+    public static final int MAX_SCANNER_THREADS = Integer.parseInt(MainWindow.config.retrieve("max_scanner_threads"));
+    public static final long MAX_SCAN_TIME = Integer.parseInt(MainWindow.config.retrieve("max_scan_time_seconds"));
+    public static boolean CLEAN_SCAN = Boolean.parseBoolean(MainWindow.config.retrieve("clean_scan"));
+    static final boolean recursive = Boolean.parseBoolean(MainWindow.config.retrieve("recursive_scan"));
+    static final String libraryPath = MainWindow.config.retrieve("library_path");
 
     List<Song> availFiles; // data structure of all songs scanned
 
