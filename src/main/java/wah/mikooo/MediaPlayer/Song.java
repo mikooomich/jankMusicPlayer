@@ -1,6 +1,6 @@
 package wah.mikooo.MediaPlayer;
 
-import java.awt.image.BufferedImage;
+import javafx.scene.image.Image;
 
 public class Song {
 
@@ -27,7 +27,7 @@ public class Song {
     public String genre;
     public long length;
     public int bitrate; // kb/s
-    public BufferedImage albumArt;
+    public Image albumArt;
 
     // lyrics
     protected LrcReader lyrics;
@@ -78,13 +78,15 @@ public class Song {
         status = statusCode;
     }
 
-    /**
-     * Return sync lyrics object
-     * @return
-     */
-    public LrcReader getLyrics() {
-        return lyrics;
-    }
+//    /**
+//     * Return sync lyrics object
+//     * @return
+//     */
+//    public LrcReader getLyrics(int timestamp) {
+//
+//        // blah balh blah
+//        return lyrics;
+//    }
 
 
     /**

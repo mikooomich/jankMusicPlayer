@@ -1,5 +1,6 @@
 package wah.mikooo.ffmpegStuff;
 
+import javafx.scene.image.Image;
 import wah.mikooo.Exceptions.MetadataExtractorException;
 import wah.mikooo.MediaPlayer.LrcReader;
 import wah.mikooo.MediaPlayer.Song;
@@ -65,12 +66,8 @@ public class MetadataExtractor implements Callable<Integer> {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    BufferedImage albumArtFromFFMPEG = null;
-                    try {
-                        albumArtFromFFMPEG = ImageIO.read(finalFfmpegThingy.getInputStream());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    Image albumArtFromFFMPEG = null;
+                    albumArtFromFFMPEG = new Image(finalFfmpegThingy.getInputStream());
                     target.albumArt = albumArtFromFFMPEG;
                     System.out.println("Finishing image extractor for " + target.path);
                 }
