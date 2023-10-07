@@ -12,23 +12,32 @@ import static wah.mikooo.ffmpegStuff.ffmpegWrapper.ffmpegOwOStream;
 
 
 public class Player implements Runnable {
-    // these are all static until i make a proper ui
-    public static SongBoard sb;
+
+
     public static boolean autoplay = Boolean.parseBoolean(MainWindow.config.retrieve("autoplay")); // play next song after end
-    public static boolean paused = false; // paused status
-    static boolean prevRequest = false; // request for a next/prev command
-    static boolean nextRequest = false;
-    static boolean forceWait = false; // force dispatcher to wait
+
+    // user settings
     static boolean USE_LYRICS = false;
     boolean prevIsRestart = true; // previous command restarts song from beginning
+    public static float defaultVolume = Float.parseFloat(MainWindow.config.retrieve("volume"));
+
+    public static boolean useStreaming;
+    public static boolean preferStreaming;
 
     public static String ffmpegBinary = MainWindow.config.retrieve("ffmpeg");
     public static String ffprobeBinary = MainWindow.config.retrieve("ffprobe");
 
-    // the thing that plays audio
+
+
+    // internal player variables
+    public static SongBoard sb; // queues and available songs
+    public static boolean paused = false; // paused status
+    static boolean prevRequest = false; // request for a next/prev command
+    static boolean nextRequest = false;
+    static boolean forceWait = false; // force dispatcher to wait
+
     public static Mouth mouth;
     static Thread mouthThread;
-    public static float defaultVolume = Float.parseFloat(MainWindow.config.retrieve("volume"));
 
 
     /**
@@ -216,7 +225,21 @@ public class Player implements Runnable {
     }
 
 
+    /**
+     * Set autoplay setting. This sets it to !autoplay
+     */
+    public void setAutoplay() {
+        setAutoplay(!autoplay);
+    }
 
+    /**
+     * Set autoplay setting
+     * @param value
+     */
+    public void setAutoplay(boolean value) {
+        autoplay = value;
+        System.out.println("Autoplay is set to " + autoplay);
+    }
 
 
 
@@ -353,8 +376,6 @@ public class Player implements Runnable {
 
         private String fileName;
         private long length; // song length in ms
-        public boolean useStreaming;
-        boolean preferStreaming;
 
         boolean goDieNow = false;
         boolean atEnd = false;
@@ -375,12 +396,12 @@ public class Player implements Runnable {
          * @param preferStreaming
          */
         public Mouth(Song path, boolean useStreaming, boolean preferStreaming) {
-           this.useStreaming = useStreaming;
+           Player.useStreaming = useStreaming;
            if (!useStreaming) { // auto disable prefer streaming
-               this.preferStreaming = false;
+               Player.preferStreaming = false;
            }
            else {
-               this.preferStreaming = preferStreaming;
+               Player.preferStreaming = preferStreaming;
            }
 
             currSong = path;

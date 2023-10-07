@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
@@ -24,6 +25,10 @@ import wah.mikooo.Utilities.Configurator;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static wah.mikooo.Utilities.Configurator.AVAIL_BOOL_SETTINGS;
 
 public class MainWindow extends Application {
     // links to backend
@@ -37,6 +42,7 @@ public class MainWindow extends Application {
     static VBox navbar;
     static HBox topSHit;
     static VBox bottomShit;
+    static VBox settingsPane;
 
 
     // pieces idk what to call this
@@ -158,10 +164,12 @@ public class MainWindow extends Application {
         controlsBox = new VBox();
         navbar = new VBox();
         bottomShit = new VBox();
+        settingsPane = new VBox();
 
         redrawTitles();
         drawCenter();
         drawPlayerCtrls();
+        drawSettingsPane();
         bottomShit.getChildren().add(root);
         seekBar = new Slider();
         bottomShit.getChildren().add(seekBar);
@@ -177,13 +185,55 @@ public class MainWindow extends Application {
         main.setLeft(navbar);
         main.setTop(topSHit);
         main.setBottom(bottomShit);
+        topSHit.getChildren().add(settingsPane);
+
 
 
         main.setStyle("-fx-background-color: gray");
         stage.setScene(scene);
         stage.show();
         stage.setTitle("WAAAAAAAAH");
+        }
+
+
+    private void drawSettingsPane() {
+        /**
+         * So I have no better way to this than having individual event handlers
+         * and then just do the simple "manually assign the handlers". ugly though.
+         */
+        EventHandler<ActionEvent> autoPLayToggle = new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                System.out.println("toggling autoplay " + e);
+                player.setAutoplay();
+            }
         };
+
+
+        // for now just barf out everything on there
+
+        List<CheckBox> toggles = new ArrayList<>();
+
+        // Load all booleans
+        for (String s: AVAIL_BOOL_SETTINGS) {
+            System.out.println(s);
+            CheckBox checkBox = new CheckBox(s);
+            String val = config.retrieve(s);
+            checkBox.setSelected(Boolean.parseBoolean(config.retrieve(s)));
+            toggles.add(checkBox);
+
+
+            switch (s) {
+                case "autoplay":
+                    checkBox.setOnAction(autoPLayToggle);
+                    break;
+            }
+
+            settingsPane.getChildren().add(checkBox);
+        }
+
+    }
+
+
 
 
 
