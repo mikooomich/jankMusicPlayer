@@ -31,105 +31,103 @@ import java.util.List;
 import static wah.mikooo.Utilities.Configurator.AVAIL_BOOL_SETTINGS;
 
 public class MainWindow extends Application {
-    // links to backend
-    static Player player;
-    static Thread playerThread;
-    public static Configurator config;
+	// links to backend
+	static Player player;
+	static Thread playerThread;
+	public static Configurator config;
 
-    // main elements
-    static BorderPane main;
-    static VBox controlsBox;
-    static VBox navbar;
-    static HBox topSHit;
-    static VBox bottomShit;
-    static VBox settingsPane;
-
-
-    // pieces idk what to call this
-    static Slider seekBar;
-    static Label artist;
-    static Label title;
-    static VBox songTitles;
+	// main elements
+	static BorderPane main;
+	static VBox controlsBox;
+	static VBox navbar;
+	static HBox topSHit;
+	static VBox bottomShit;
+	static VBox settingsPane;
 
 
-    @Override
-    public void start(Stage stage) throws InterruptedException {
-        Thread brains = new Thread(new Runnable() {
-            public void run() {
-
-                try {
-                    config = new Configurator();
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-
-                try {
-                    // player backend thread
-                    player = new Player(new SongBoard());
-                    playerThread = new Thread(player);
-                    System.out.println("Starting threads");
-    //                uiThread.start();
-                    playerThread.start();
-                }
-                catch (Exception e) {
-                        e.printStackTrace();
-                }
-            }
-        });
+	// pieces idk what to call this
+	static Slider seekBar;
+	static Label artist;
+	static Label title;
+	static VBox songTitles;
 
 
-        brains.start();
+	@Override
+	public void start(Stage stage) throws InterruptedException {
+		Thread brains = new Thread(new Runnable() {
+			public void run() {
 
-        // Hi so uhhh you know what's the best solution to a race condition? Ignoring the problem lol
-        Thread.sleep(2000);
+				try {
+					config = new Configurator();
+				} catch (FileNotFoundException e) {
+					throw new RuntimeException(e);
+				}
+
+				try {
+					// player backend thread
+					player = new Player(new SongBoard());
+					playerThread = new Thread(player);
+					System.out.println("Starting threads");
+					//                uiThread.start();
+					playerThread.start();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 
 
-        main = new BorderPane();
-        HBox root = new HBox();
-        Scene scene = new Scene(main, 800, 600);
-        scene.setFill(Color.GRAY);
-        root.setPadding(new Insets(10,10,10,10));
-        root.setSpacing(20);
+		brains.start();
+
+		// Hi so uhhh you know what's the best solution to a race condition? Ignoring the problem lol
+		Thread.sleep(2000);
 
 
+		main = new BorderPane();
+		HBox root = new HBox();
+		Scene scene = new Scene(main, 800, 600);
+		scene.setFill(Color.GRAY);
+		root.setPadding(new Insets(10, 10, 10, 10));
+		root.setSpacing(20);
 
-        // Player buttons
-        Button play = new Button("Play");
-        Button pause = new Button("pause");
-        Button next = new Button("next");
-        Button prev = new Button("prev");
-        Button load = new Button("queue all");
 
-        EventHandler<ActionEvent> playTrigger = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                System.out.println("Play button");
-                player.play();
-            }
-        };
-        EventHandler<ActionEvent> pauseTrigger = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                System.out.println("pause button");
-                player.pause();
-            }
-        };
-        EventHandler<ActionEvent> prevTrigger = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                System.out.println("prev button");
-                player.prev();
-            }
-        };
-        EventHandler<ActionEvent> nextTrigger = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                System.out.println("next button");
-                player.next();
-            }
-        };
-        EventHandler<ActionEvent> addAllTrigger = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                System.out.println("addALL button");
-                player.playAll();
-            }
-        };
+		// Player buttons
+		Button play = new Button("Play");
+		Button pause = new Button("pause");
+		Button next = new Button("next");
+		Button prev = new Button("prev");
+		Button load = new Button("queue all");
+
+		EventHandler<ActionEvent> playTrigger = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				System.out.println("Play button");
+				player.play();
+			}
+		};
+		EventHandler<ActionEvent> pauseTrigger = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				System.out.println("pause button");
+				player.pause();
+			}
+		};
+		EventHandler<ActionEvent> prevTrigger = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				System.out.println("prev button");
+				player.prev();
+			}
+		};
+		EventHandler<ActionEvent> nextTrigger = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				System.out.println("next button");
+				player.next();
+			}
+		};
+		EventHandler<ActionEvent> addAllTrigger = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				System.out.println("addALL button");
+				player.playAll();
+			}
+		};
 
 
 //        Button redrawButt = new Button("redraw");
@@ -141,170 +139,163 @@ public class MainWindow extends Application {
 //        };
 
 
-        play.setOnAction(playTrigger);
-        pause.setOnAction(pauseTrigger);
-        next.setOnAction(nextTrigger);
-        prev.setOnAction(prevTrigger);
-        load.setOnAction(addAllTrigger);
+		play.setOnAction(playTrigger);
+		pause.setOnAction(pauseTrigger);
+		next.setOnAction(nextTrigger);
+		prev.setOnAction(prevTrigger);
+		load.setOnAction(addAllTrigger);
 //        redrawButt.setOnAction(redraw);
 
-        root.getChildren().add(play);
-        root.getChildren().add(pause);
-        root.getChildren().add(next);
-        root.getChildren().add(prev);
-        root.getChildren().add(load);
+		root.getChildren().add(play);
+		root.getChildren().add(pause);
+		root.getChildren().add(next);
+		root.getChildren().add(prev);
+		root.getChildren().add(load);
 //        root.getChildren().add(redrawButt);
 
 
+		// Put shit where it should go
+		topSHit = new HBox();
+		controlsBox = new VBox();
+		navbar = new VBox();
+		bottomShit = new VBox();
+		settingsPane = new VBox();
+
+		redrawTitles();
+		drawCenter();
+		drawPlayerCtrls();
+		drawSettingsPane();
+		bottomShit.getChildren().add(root);
+		seekBar = new Slider();
+		bottomShit.getChildren().add(seekBar);
 
 
-
-        // Put shit where it should go
-        topSHit = new HBox();
-        controlsBox = new VBox();
-        navbar = new VBox();
-        bottomShit = new VBox();
-        settingsPane = new VBox();
-
-        redrawTitles();
-        drawCenter();
-        drawPlayerCtrls();
-        drawSettingsPane();
-        bottomShit.getChildren().add(root);
-        seekBar = new Slider();
-        bottomShit.getChildren().add(seekBar);
+		seekBar.setOnMouseReleased(event -> {
+			System.out.println("SEEKING TO" + seekBar.getValue());
+			player.seekTo((int) seekBar.getValue());
+		});
 
 
-        seekBar.setOnMouseReleased(event -> {
-            System.out.println("SEEKING TO" + seekBar.getValue());
-            player.seekTo((int) seekBar.getValue());
-        });
+		main.setRight(controlsBox);
+		main.setLeft(navbar);
+		main.setTop(topSHit);
+		main.setBottom(bottomShit);
+		topSHit.getChildren().add(settingsPane);
 
 
-        main.setRight(controlsBox);
-        main.setLeft(navbar);
-        main.setTop(topSHit);
-        main.setBottom(bottomShit);
-        topSHit.getChildren().add(settingsPane);
+		main.setStyle("-fx-background-color: gray");
+		stage.setScene(scene);
+		stage.show();
+		stage.setTitle("WAAAAAAAAH");
+	}
 
 
-
-        main.setStyle("-fx-background-color: gray");
-        stage.setScene(scene);
-        stage.show();
-        stage.setTitle("WAAAAAAAAH");
-        }
-
-
-    private void drawSettingsPane() {
-        /**
-         * So I have no better way to this than having individual event handlers
-         * and then just do the simple "manually assign the handlers". ugly though.
-         */
-        EventHandler<ActionEvent> autoPLayToggle = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                System.out.println("toggling autoplay " + e);
-                player.setAutoplay();
-            }
-        };
+	private void drawSettingsPane() {
+		/**
+		 * So I have no better way to this than having individual event handlers
+		 * and then just do the simple "manually assign the handlers". ugly though.
+		 */
+		EventHandler<ActionEvent> autoPLayToggle = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				System.out.println("toggling autoplay " + e);
+				player.setAutoplay();
+			}
+		};
 
 
-        // for now just barf out everything on there
+		// for now just barf out everything on there
 
-        List<CheckBox> toggles = new ArrayList<>();
+		List<CheckBox> toggles = new ArrayList<>();
 
-        // Load all booleans
-        for (String s: AVAIL_BOOL_SETTINGS) {
-            System.out.println(s);
-            CheckBox checkBox = new CheckBox(s);
-            String val = config.retrieve(s);
-            checkBox.setSelected(Boolean.parseBoolean(config.retrieve(s)));
-            toggles.add(checkBox);
-
-
-            switch (s) {
-                case "autoplay":
-                    checkBox.setOnAction(autoPLayToggle);
-                    break;
-            }
-
-            settingsPane.getChildren().add(checkBox);
-        }
-
-    }
+		// Load all booleans
+		for (String s : AVAIL_BOOL_SETTINGS) {
+			System.out.println(s);
+			CheckBox checkBox = new CheckBox(s);
+			String val = config.retrieve(s);
+			checkBox.setSelected(Boolean.parseBoolean(config.retrieve(s)));
+			toggles.add(checkBox);
 
 
+			switch (s) {
+				case "autoplay":
+					checkBox.setOnAction(autoPLayToggle);
+					break;
+			}
+
+			settingsPane.getChildren().add(checkBox);
+		}
+
+	}
 
 
+	public static void main(String[] args) {
+		System.out.println("Hewwo world!");
+		launch();
+		playerThread.interrupt();
+		System.out.println("Goodbye world!");
+	}
 
-    public static void main(String[] args) {
-        System.out.println("Hewwo world!");
-        launch();
-        playerThread.interrupt();
-        System.out.println("Goodbye world!");
-    }
+	/**
+	 * Update the position of the seek bar
+	 *
+	 * @param s Song
+	 */
+	public static void updateSongPos(Song s) {
+		seekBar.setMax(s.length);
+		seekBar.setMin(0);
+		seekBar.setValue(Player.Mouth.getCurrentPosMs());
+	}
 
-    /**
-     * Update the position of the seek bar
-     * @param s Song
-
-     */
-    public static void updateSongPos(Song s) {
-        seekBar.setMax(s.length);
-        seekBar.setMin(0);
-        seekBar.setValue(Player.Mouth.getCurrentPosMs());
-    }
-
-    /**
-     * Draw the player controls
-     */
-    public static void drawPlayerCtrls () {
-        Slider slider = new Slider();
-        slider.setOrientation(Orientation.VERTICAL);
-        slider.setMin(-40);
-        slider.setMax(5);
-        slider.setValue(-10);
-        slider.setMajorTickUnit(10);
-        slider.setShowTickLabels(true);
-
-
-        Button more = new Button("more");
-        Button info = new Button("Info");
-
-        Button shuffle = new Button("SHuffle");
-        Button repeat = new Button("Repeat");
+	/**
+	 * Draw the player controls
+	 */
+	public static void drawPlayerCtrls() {
+		Slider slider = new Slider();
+		slider.setOrientation(Orientation.VERTICAL);
+		slider.setMin(-40);
+		slider.setMax(5);
+		slider.setValue(-10);
+		slider.setMajorTickUnit(10);
+		slider.setShowTickLabels(true);
 
 
-        EventHandler<ActionEvent> moreTrigger = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                System.out.println("more button");
-            }
-        };
-        EventHandler<ActionEvent> infoTrigger = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                System.out.println("info button");
-            }
-        };
-        EventHandler<ActionEvent> shuffleTrigger = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                System.out.println("shuffle button");
-            }
-        };
-        EventHandler<ActionEvent> repeatTrigger = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                System.out.println("repeat button");
-            }
-        };
+		Button more = new Button("more");
+		Button info = new Button("Info");
+
+		Button shuffle = new Button("SHuffle");
+		Button repeat = new Button("Repeat");
 
 
-        EventHandler<ActionEvent> volAdjust = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                System.out.println("rslider val");
-            }
-        };
+		EventHandler<ActionEvent> moreTrigger = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				System.out.println("more button");
+			}
+		};
+		EventHandler<ActionEvent> infoTrigger = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				System.out.println("info button");
+			}
+		};
+		EventHandler<ActionEvent> shuffleTrigger = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				System.out.println("shuffle button");
+			}
+		};
+		EventHandler<ActionEvent> repeatTrigger = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				System.out.println("repeat button");
+			}
+		};
 
 
-        // maybe use this for volume
+		EventHandler<ActionEvent> volAdjust = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				System.out.println("rslider val");
+			}
+		};
+
+
+		// maybe use this for volume
 //        slider.valueProperty().addListener( new ChangeListener<Number>() {
 //
 //            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -312,132 +303,126 @@ public class MainWindow extends Application {
 //                System.out.println("slider val=== " + newValue);
 //            }
 //        });
-        slider.setOnMouseReleased(event -> {
-            System.out.println(slider.getValue());
-            player.changeVolume((float) slider.getValue());
-        });
+		slider.setOnMouseReleased(event -> {
+			System.out.println(slider.getValue());
+			player.changeVolume((float) slider.getValue());
+		});
 
 
-
-        more.setOnAction(moreTrigger);
-        info.setOnAction(infoTrigger);
-        shuffle.setOnAction(shuffleTrigger);
-        repeat.setOnAction(repeatTrigger);
-
-
-        navbar.getChildren().add(info);
-        navbar.getChildren().add(more);
-
-        controlsBox.getChildren().add(shuffle);
-        controlsBox.getChildren().add(repeat);
-        controlsBox.getChildren().add(slider);
-
-    }
+		more.setOnAction(moreTrigger);
+		info.setOnAction(infoTrigger);
+		shuffle.setOnAction(shuffleTrigger);
+		repeat.setOnAction(repeatTrigger);
 
 
-    /**
-     * Draw album art
-     */
-    public static void drawCenter() {
-        drawCenter(null);
-    }
+		navbar.getChildren().add(info);
+		navbar.getChildren().add(more);
 
-    /**
-     * Draw the center album art and lyric combo
-     * Provide null to draw album art, else a string for lyrics.
-     * I am likely heavily violating good programming practices.
-     * @param lyrics
-     */
-    public static void drawCenter(String lyrics) {
-        /**
-         * TODO: avoid loading image on every lyric request
-         */
-        VBox centerShit = new VBox();
-        centerShit.setPrefSize(400,400);
+		controlsBox.getChildren().add(shuffle);
+		controlsBox.getChildren().add(repeat);
+		controlsBox.getChildren().add(slider);
 
-        if (Player.sb == null || Player.sb.getCurrentlyPlaying() == null) {
-            try {
-                ImageView imageView;
-                imageView = new ImageView(new Image(new FileInputStream("./placeholder.png")));
-                imageView.setFitWidth(400);
-                imageView.setPreserveRatio(true);
-                centerShit.getChildren().add(imageView);
-            }
-            catch (FileNotFoundException e) {
-                Rectangle r = new Rectangle(0, 0, 400, 400);
-                r.setFill(Color.BLUE);
-                centerShit.getChildren().add(r);
-            }
-        }
-        else if (lyrics == null) {
-            System.out.println("drawing image\n\n\n\n\nAAAAAAAAAAAAAAAAAAAAAAAAAA");
-            Image art = Player.sb.getCurrentlyPlaying().albumArt;
-            ImageView imageView;
-
-            if (art == null) {
-                imageView = new ImageView(new Image("./placeholder.png"));
-            }
-            else {
-                imageView = new ImageView(art);
-            }
-
-            imageView.setFitWidth(400);
-            imageView.setPreserveRatio(true);
-            centerShit.getChildren().add(imageView);
-        }
-        else {
-            centerShit.getChildren().add(new Label(lyrics));
-        }
-
-        // why the fuck does this fix the not on FX thread error
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                main.setCenter(centerShit);
-            }
-        });
-    }
+	}
 
 
-    /**
-     * Draw artist and titles/ info bar
-     */
-    public static void redrawTitles() {
-        if (Player.sb == null || Player.sb.getCurrentlyPlaying() == null) {
-            title = new Label("TITLE");
-            artist = new Label("ARTIST");
-        }
-        else {
-            title = new Label(Player.sb.getCurrentlyPlaying().title);
-            artist = new Label(Player.sb.getCurrentlyPlaying().artist);
-        }
+	/**
+	 * Draw album art
+	 */
+	public static void drawCenter() {
+		drawCenter(null);
+	}
 
-        songTitles = new VBox();
-        songTitles.getChildren().add(title);
-        songTitles.getChildren().add(artist);
+	/**
+	 * Draw the center album art and lyric combo
+	 * Provide null to draw album art, else a string for lyrics.
+	 * I am likely heavily violating good programming practices.
+	 *
+	 * @param lyrics
+	 */
+	public static void drawCenter(String lyrics) {
+		/**
+		 * TODO: avoid loading image on every lyric request
+		 */
+		VBox centerShit = new VBox();
+		centerShit.setPrefSize(400, 400);
+
+		if (Player.sb == null || Player.sb.getCurrentlyPlaying() == null) {
+			try {
+				ImageView imageView;
+				imageView = new ImageView(new Image(new FileInputStream("./placeholder.png")));
+				imageView.setFitWidth(400);
+				imageView.setPreserveRatio(true);
+				centerShit.getChildren().add(imageView);
+			} catch (FileNotFoundException e) {
+				Rectangle r = new Rectangle(0, 0, 400, 400);
+				r.setFill(Color.BLUE);
+				centerShit.getChildren().add(r);
+			}
+		} else if (lyrics == null) {
+			System.out.println("drawing image\n\n\n\n\nAAAAAAAAAAAAAAAAAAAAAAAAAA");
+			Image art = Player.sb.getCurrentlyPlaying().albumArt;
+			ImageView imageView;
+
+			if (art == null) {
+				imageView = new ImageView(new Image("./placeholder.png"));
+			} else {
+				imageView = new ImageView(art);
+			}
+
+			imageView.setFitWidth(400);
+			imageView.setPreserveRatio(true);
+			centerShit.getChildren().add(imageView);
+		} else {
+			centerShit.getChildren().add(new Label(lyrics));
+		}
+
+		// why the fuck does this fix the not on FX thread error
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				main.setCenter(centerShit);
+			}
+		});
+	}
 
 
+	/**
+	 * Draw artist and titles/ info bar
+	 */
+	public static void redrawTitles() {
+		if (Player.sb == null || Player.sb.getCurrentlyPlaying() == null) {
+			title = new Label("TITLE");
+			artist = new Label("ARTIST");
+		} else {
+			title = new Label(Player.sb.getCurrentlyPlaying().title);
+			artist = new Label(Player.sb.getCurrentlyPlaying().artist);
+		}
 
-        Button settings = new Button("Settings");
-        EventHandler<ActionEvent> settingsTrigger = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                System.out.println("settings button");
-            }
-        };
-
-        settings.setOnAction(settingsTrigger);
+		songTitles = new VBox();
+		songTitles.getChildren().add(title);
+		songTitles.getChildren().add(artist);
 
 
-        // why the fuck does this fix the not on FX thread error
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                topSHit = new HBox();
-                topSHit.getChildren().add(songTitles);
-                topSHit.getChildren().add(settings);
-            }
-        });
+		Button settings = new Button("Settings");
+		EventHandler<ActionEvent> settingsTrigger = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				System.out.println("settings button");
+			}
+		};
 
-    }
+		settings.setOnAction(settingsTrigger);
+
+
+		// why the fuck does this fix the not on FX thread error
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				topSHit = new HBox();
+				topSHit.getChildren().add(songTitles);
+				topSHit.getChildren().add(settings);
+			}
+		});
+
+	}
 
 }
