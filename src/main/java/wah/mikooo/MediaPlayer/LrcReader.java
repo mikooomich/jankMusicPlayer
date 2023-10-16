@@ -212,14 +212,14 @@ public class LrcReader {
 		lrcThread = new Thread(new Runnable() {
 			@Override
 			public synchronized void run() {
+				System.out.println("DEBUG: Lyric Printer started");
 
 				MainWindow.drawCenter(); // clear old ui element
 				try {
-					while (alive) {
-						while (!paused) {
+					while (alive && Player.USE_LYRICS) {
+						while (!paused && Player.USE_LYRICS) {
 							// This double loop serves no purpose because "resumes" are now treated as "start"
 							// I guess it won't hurt to keep it here...
-
 							long waitTime = doPrint(currTstmp);
 							currTstmp += waitTime;
 							wait(waitTime);
@@ -228,7 +228,8 @@ public class LrcReader {
 						paused = true;
 					} // outer while
 				} catch (InterruptedException e) {
-					System.out.println("DEBUG: LRC printer is exiting");
+					System.out.println("Error: LRC printer is exiting");
+					System.out.println(e);
 					return;
 				}
 
@@ -244,10 +245,16 @@ public class LrcReader {
 	 * This method also kills the old session with killSession()
 	 */
 	public void startSession() {
+		if (!Player.USE_LYRICS) { // lyrics are disabled
+			System.out.println("Lyrics are disabled, exiting lyric printer");
+			return;
+		}
 		if (data == null) {
 			System.out.println("Song has no lyrics, exiting lyric printer");
 			return;
 		}
+		System.out.println("DEBUG: Lyric Session started");
+
 		// reset odometer
 		if (currTstmp >= Long.MAX_VALUE) {
 			currTstmp = 0;
@@ -258,7 +265,8 @@ public class LrcReader {
 		killSession();
 		paused = false;
 		alive = true;
-
+		currTstmp =  Player.Mouth.getCurrentPosMs();
+		System.out.println("set time to " + currTstmp);
 		lrcPrinter();
 	}
 
@@ -268,6 +276,9 @@ public class LrcReader {
 	 * @param timeStamp timestamp (in ms) to save to odometer
 	 */
 	public void pause(long timeStamp) {
+		if (!Player.USE_LYRICS) { // lyrics are disabled
+			return;
+		}
 		killSession();
 		currTstmp = timeStamp; // save current place
 	}
@@ -277,7 +288,7 @@ public class LrcReader {
 	 * This is the same as startSession, but doesn't do anything if session is playing
 	 */
 	public void resume() {
-		if (!paused) {
+		if (!paused || !Player.USE_LYRICS) {
 			return;
 		}
 

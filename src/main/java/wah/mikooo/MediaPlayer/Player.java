@@ -241,6 +241,29 @@ public class Player implements Runnable {
 		System.out.println("Autoplay is set to " + autoplay);
 	}
 
+	/**
+	 * Toggle USE_LYRICS flag
+	 */
+	public void toggleUseLyrics() {
+		setUseLyrics(!USE_LYRICS);
+	}
+
+	/**
+	 * Directly set the value of USE_LYRICS
+	 * @param value
+	 */
+	private void setUseLyrics(boolean value) {
+		USE_LYRICS = value;
+	}
+
+	/**
+	 * Get the value of USE_LYRICS
+	 * @return
+	 */
+	public boolean getUseLyrics() {
+		return USE_LYRICS;
+	}
+
 
 	/**
 	 * Handle dispatching mouth thread.
@@ -483,6 +506,7 @@ public class Player implements Runnable {
 
 			InputStream audioStream = null;
 			byte[] audioFile = null;
+			totalBytes = 0;
 
 			System.out.println("Streaming fallback is set to: " + useStreaming);
 			System.out.println("Prefer Streaming is set to: " + preferStreaming);
