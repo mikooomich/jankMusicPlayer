@@ -21,16 +21,16 @@ public class Mouth implements Runnable {
 	boolean hotRestart = false;
 
 	SourceDataLine line;
-	static AudioInputStream aas = null;
+	AudioInputStream aas = null;
 
-	static int totalBytes = 0; // total bytes "played"
+	int totalBytes = 0; // total bytes "played"
 
 	Song currSong;
 
 
 	private Thread mouthThread = null;
 
-//	private SongBoard sb;
+	//	private SongBoard sb;
 	private Player plr;
 
 	/**
@@ -44,7 +44,8 @@ public class Mouth implements Runnable {
 		playerLink.useStreaming = useStreaming;
 		if (!useStreaming) { // auto disable prefer streaming
 			playerLink.preferStreaming = false;
-		} else {
+		}
+		else {
 			playerLink.preferStreaming = preferStreaming;
 			playerLink.useHybridStreaming = useHybridStreaming;
 		}
@@ -65,7 +66,7 @@ public class Mouth implements Runnable {
 	 * @param path
 	 */
 	public Mouth(Song path, Player playerLink) {
-		this(path, playerLink,true, false, true);
+		this(path, playerLink, true, false, true);
 	}
 
 
@@ -74,7 +75,7 @@ public class Mouth implements Runnable {
 	 *
 	 * @return
 	 */
-	public static long getCurrentPosMs() {
+	public long getCurrentPosMs() {
 		// -1 is unavalible / no data
 		if (aas != null) {
 			return (long) (totalBytes / aas.getFormat().getFrameSize() / aas.getFormat().getFrameRate() * 1000);
@@ -103,7 +104,8 @@ public class Mouth implements Runnable {
 	public boolean atEnd() {
 		if (atEnd) {
 			return true;
-		} else {
+		}
+		else {
 			return false;
 		}
 	}
@@ -127,12 +129,12 @@ public class Mouth implements Runnable {
 
 	/**
 	 * Play sound.
-	 *
+	 * <p>
 	 * If useStreaming is true, first lookup memory for song, then use streaming as a fallback if required.
 	 * If useStreaming is false, we will always wait for FFMpeg transcode to finish before playing.
 	 * If useHybridStreaming is true, we will directly stream from the byte array FFMpeg transcode into.
 	 * If preferStreaming is true, we will always FFMpeg stream the song without saving transcode to memory.
-	 *
+	 * <p>
 	 * With useStreaming enable and hybrid streaming disabled, the song is directly streamed from FFMpeg, and a copy of the song will be saved in memory (these are 2 separate threads).
 	 */
 	synchronized void audioSession() {
@@ -205,7 +207,8 @@ public class Mouth implements Runnable {
 				}
 				Thread.sleep(1000);
 
-			} else { // we have the full song already loaded
+			}
+			else { // we have the full song already loaded
 				System.out.println("Using loaded stream");
 				aas = AudioSystem.getAudioInputStream(new ByteArrayInputStream(audioFile));
 			}
@@ -289,7 +292,7 @@ public class Mouth implements Runnable {
 				 * Save lasts second, trigger update every second
 				 */
 				if (Math.floor((long) (totalBytes / frameSize / frameRate)) > lastSecond) {
-//                        System.out.println(totalBytes / frameSize / frameRate);
+					// System.out.println(totalBytes / frameSize / frameRate);
 					MainWindow.updateSongPos(currSong);
 					lastSecond = (long) Math.floor((long) (totalBytes / frameSize / frameRate));
 				}
@@ -351,7 +354,8 @@ public class Mouth implements Runnable {
 			// Seeking forward requires RELATIVE OFFSET
 			System.out.println("JUMPING FWD to " + ms);
 			fastFwd(ms - currentTime, aas.getFormat().getFrameSize(), aas.getFormat().getFrameRate());
-		} else {
+		}
+		else {
 			// Seeking backward requires ABSOLUTE POSITION
 			System.out.println("JUMPING BACK to " + ms);
 			rewind(ms, aas.getFormat().getFrameSize(), aas.getFormat().getFrameRate());
@@ -372,7 +376,7 @@ public class Mouth implements Runnable {
 
 		while (aas == null && !goDieNow) {
 			// blocking until valid audio session
-			Thread.sleep(100);                 // this looks like a deadlock possibility? Allow goDieNow as a force exit?
+			Thread.sleep(100); // this looks like a deadlock possibility? Allow goDieNow as a force exit?
 		}
 		totalBytes += bytePosition;
 		System.out.println("skipped (bytes)" + aas.skip(bytePosition));
@@ -411,7 +415,8 @@ public class Mouth implements Runnable {
 		if (ms <= 0 || ms >= length) {
 			// skip to next song/restart current if OOB
 			return;
-		} else {
+		}
+		else {
 			fastFwd(ms, frameSize, frameRate);
 			if (plr.USE_LYRICS) {
 				plr.getCurrentlyPlaying().lyrics.startSession();

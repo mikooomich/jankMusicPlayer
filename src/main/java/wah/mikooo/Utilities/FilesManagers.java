@@ -51,7 +51,8 @@ public class FilesManagers {
 
 		if (!recursive) {
 			scan(libraryPath);
-		} else {
+		}
+		else {
 			scanInclSubDir(libraryPath);
 		}
 
@@ -92,7 +93,8 @@ public class FilesManagers {
 				if (recursive) {
 					subfolders.add(file.getAbsolutePath());
 				}
-			} else if (!availFiles.stream().anyMatch(song -> song.path.equals(file.getAbsolutePath()))) {
+			}
+			else if (!availFiles.stream().anyMatch(song -> song.path.equals(file.getAbsolutePath()))) {
 				availFiles.add(new Song(file.getAbsolutePath()));
 //                System.out.println("adding " + file.getAbsolutePath());
 			}

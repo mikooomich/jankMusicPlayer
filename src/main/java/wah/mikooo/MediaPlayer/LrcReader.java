@@ -105,14 +105,17 @@ public class LrcReader {
 					if (lineData.startsWith("[") && timestamp.isBlank()) {
 						timestamp = lineData.substring(1, lineData.indexOf("]"));
 						lyricBuffer = lineData.substring(lineData.indexOf("]") + 1) + "\n";
-					} else if (lineData.startsWith("[") && !timestamp.isBlank()) { // commit to list
+					}
+					else if (lineData.startsWith("[") && !timestamp.isBlank()) { // commit to list
 						// add code here to strip the extra \n\n\n\n spam between lyrics in the future
 						data.add(new LyricEntry(timestamp, lyricBuffer));
 						break;
-					} else if (lineData.isBlank() && lyricBuffer.isBlank()) {
+					}
+					else if (lineData.isBlank() && lyricBuffer.isBlank()) {
 						// ignore blanks in between timestamp and lyric blocks
 						continue;
-					} else {
+					}
+					else {
 						lyricBuffer += lineData + "\n";
 					}
 

@@ -293,7 +293,6 @@ public class MainWindow extends Application {
 		};
 
 
-
 		EventHandler<ActionEvent> showLyric = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent e) {
 				System.out.println("toggle show lyrics");
@@ -371,14 +370,16 @@ public class MainWindow extends Application {
 				r.setFill(Color.BLUE);
 				centerShit.getChildren().add(r);
 			}
-		} else if (lyrics == null && !player.getUseLyrics()) {
+		}
+		else if (lyrics == null && !player.getUseLyrics()) {
 			// draw art instead of lyrics when lyrics are present and enabled
 			System.out.println("drawing image\n\n\n\n\nAAAAAAAAAAAAAAAAAAAAAAAAAA");
 			Image art = s.albumArt;
 
 			if (art == null) {
 				imageView = new ImageView(new Image("./placeholder.png"));
-			} else {
+			}
+			else {
 				imageView = new ImageView(art);
 				imageView.setOnMouseClicked(e -> {
 
@@ -395,7 +396,8 @@ public class MainWindow extends Application {
 			imageView.setFitWidth(400);
 			imageView.setPreserveRatio(true);
 			centerShit.getChildren().add(imageView);
-		} else {
+		}
+		else {
 			centerShit.getChildren().add(new Label(lyrics));
 		}
 
@@ -418,7 +420,8 @@ public class MainWindow extends Application {
 		if (s == null) {
 			title = new Label("TITLE");
 			artist = new Label("ARTIST");
-		} else {
+		}
+		else {
 			title = new Label(s.title);
 			artist = new Label(s.artist);
 		}
@@ -451,8 +454,8 @@ public class MainWindow extends Application {
 	}
 
 
-	 public static Player getPlayer() {
+	public static Player getPlayer() {
 		return player;
-	 }
+	}
 
 }

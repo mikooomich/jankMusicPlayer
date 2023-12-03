@@ -106,8 +106,6 @@ public class Song {
 
 	/**
 	 * Set sync lyrics object
-	 *
-	 * @return
 	 */
 	public void setLyrics(LrcReader newLyrics) {
 		// maybe in the future only allow one write

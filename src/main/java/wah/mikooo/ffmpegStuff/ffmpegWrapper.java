@@ -165,10 +165,8 @@ public class ffmpegWrapper {
 						int bytesRead = 0;
 
 						// read to array lol
-						while (totalBytesRead < trackLengthBytes &&
-								(bytesRead = streamOutOfProcess.readNBytes(songData, totalBytesRead,
-										Math.min(trackLengthBytes - totalBytesRead, BYTE_BUFFER_SIZE)) // if BYTE_BUFFER_SIZE is greater than remaining, use remaining size
-								) > 0) {
+						while (totalBytesRead < trackLengthBytes && (bytesRead = streamOutOfProcess.readNBytes(songData, totalBytesRead, Math.min(trackLengthBytes - totalBytesRead, BYTE_BUFFER_SIZE)) // if BYTE_BUFFER_SIZE is greater than remaining, use remaining size
+						) > 0) {
 							totalBytesRead += bytesRead;
 //							System.out.println("BYTE" + bytesRead);
 //							System.out.println("TOTAL BYTES" + totalBytesRead);

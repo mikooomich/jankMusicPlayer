@@ -23,8 +23,6 @@ public class Player implements Runnable {
 	public boolean useHybridStreaming;
 
 
-
-
 	// internal player variables
 	protected SongBoard sb; // queues and available songs
 	public boolean paused = false; // paused status
@@ -186,13 +184,15 @@ public class Player implements Runnable {
 			// do nothing
 //            System.out.println("Jumping finished " + sb.getCurrentlyPlaying().path);
 			return;
-		} else if (indexesToJump > 0) { // skipping 1 song is equivalent to calling next
+		}
+		else if (indexesToJump > 0) { // skipping 1 song is equivalent to calling next
 			while (indexesToJump > 0) {
 				sb.getNext(); // this next function does not dispatch mouth
 				indexesToJump--;
 			}
 			next(); // when there is one song to skip left, call the next command to start playing
-		} else if (indexesToJump < 0) { // skipping 1 song is equivalent to calling next
+		}
+		else if (indexesToJump < 0) { // skipping 1 song is equivalent to calling next
 			while (indexesToJump < -1) {
 				sb.getPrev(); // this next function does not dispatch mouth
 				indexesToJump--;
@@ -246,6 +246,7 @@ public class Player implements Runnable {
 
 	/**
 	 * Directly set the value of USE_LYRICS
+	 *
 	 * @param value
 	 */
 	private void setUseLyrics(boolean value) {
@@ -254,6 +255,7 @@ public class Player implements Runnable {
 
 	/**
 	 * Get the value of USE_LYRICS
+	 *
 	 * @return
 	 */
 	public boolean getUseLyrics() {
@@ -301,7 +303,8 @@ public class Player implements Runnable {
 						if (mouth != null && mouth.atEnd()) {
 							System.out.println("Detect end of song, Playing new track");
 							player(sb.getCurrentlyPlaying());
-						} else if (mouth == null) {
+						}
+						else if (mouth == null) {
 							player(sb.getCurrentlyPlaying());
 							System.out.println("Playing new track (first run)");
 						}
@@ -326,7 +329,8 @@ public class Player implements Runnable {
 						if (paused) { // go to primary wait case
 							System.out.println("Paused, time for primary wait");
 							break inner;
-						} else if (prevRequest) {
+						}
+						else if (prevRequest) {
 							if (sb.peekPrev() != null && !prevIsRestart) {
 								System.out.println(sb.getPrev().path + " (prev requested)");
 							}
@@ -335,7 +339,8 @@ public class Player implements Runnable {
 							mouth.kill();
 							break inner;
 
-						} else if (nextRequest) { // assume reached end of song, dispatch song next loop run (easier understood than explained idk)
+						}
+						else if (nextRequest) { // assume reached end of song, dispatch song next loop run (easier understood than explained idk)
 							if (sb.peekNext() != null) {
 								System.out.println(sb.getNext().path + " (next requested)");
 							}
@@ -385,7 +390,6 @@ public class Player implements Runnable {
 	}
 
 
-
 	// fucking i changes shit to protected and the ui has sseus
 
 	public void startLyricPrinter() {
@@ -397,8 +401,7 @@ public class Player implements Runnable {
 	}
 
 	public Song getCurrentlyPlaying() {
-		if (sb == null)
-			return null;
+		if (sb == null) return null;
 		return sb.getCurrentlyPlaying();
 	}
 

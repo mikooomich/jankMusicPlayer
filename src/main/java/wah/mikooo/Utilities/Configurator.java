@@ -13,23 +13,9 @@ public class Configurator {
 	private HashMap<String, String> settings;
 
 	private static final String CONFIG_VERSION = "0.0.1";
-	public static final String[] AVAIL_SETTINGS = {"max_scanner_threads",
-			"max_scan_time_seconds",
-			"clean_scan",
-			"recursive_scan",
-			"library_path",
-			"ffmpeg",
-			"ffprobe",
-			"autoplay",
-			"previous_button_acts_as_replay_seconds",
-			"volume",
-	};
+	public static final String[] AVAIL_SETTINGS = {"max_scanner_threads", "max_scan_time_seconds", "clean_scan", "recursive_scan", "library_path", "ffmpeg", "ffprobe", "autoplay", "previous_button_acts_as_replay_seconds", "volume",};
 
-	public static final String[] AVAIL_BOOL_SETTINGS = {
-			"clean_scan",
-			"recursive_scan",
-			"autoplay"
-	};
+	public static final String[] AVAIL_BOOL_SETTINGS = {"clean_scan", "recursive_scan", "autoplay"};
 
 
 	public Configurator() throws FileNotFoundException {
@@ -41,38 +27,37 @@ public class Configurator {
 		try {
 			BufferedReader configRead = new BufferedReader(new FileReader(new File("./config.wah")));
 
-			configRead.lines().forEach(
-					line -> {
-						// format is name=value
-						if (!line.startsWith("#") && line.contains("=")) {
-							String key = line.substring(0, line.indexOf("="));
+			configRead.lines().forEach(line -> {
+				// format is name=value
+				if (!line.startsWith("#") && line.contains("=")) {
+					String key = line.substring(0, line.indexOf("="));
 
-							switch (key) {
-								// booleans
-								case "autoplay", "clean_scan", "recursive_scan" ->
-									// read all invalid bool values as false
-										settings.put(line.substring(0, line.indexOf("=")), line.substring(line.indexOf("=") + 1));
+					switch (key) {
+						// booleans
+						case "autoplay", "clean_scan", "recursive_scan" ->
+							// read all invalid bool values as false
+							settings.put(line.substring(0, line.indexOf("=")), line.substring(line.indexOf("=") + 1));
 
-								// check numbers are numbers
-								case "volume" -> {
-									System.out.println("aaa");
-									try {
-										Integer.parseInt(line.substring(line.indexOf("=") + 1));
-									} catch (NumberFormatException e) {
-										settings.put(key, defaults.get(key));
-										break;
-									}
-
-									settings.put(key, line.substring(line.indexOf("=") + 1));
-									break;
-								}
-
-
-								default -> settings.put(key, line.substring(line.indexOf("=") + 1));
+						// check numbers are numbers
+						case "volume" -> {
+							System.out.println("aaa");
+							try {
+								Integer.parseInt(line.substring(line.indexOf("=") + 1));
+							} catch (NumberFormatException e) {
+								settings.put(key, defaults.get(key));
+								break;
 							}
 
+							settings.put(key, line.substring(line.indexOf("=") + 1));
+							break;
 						}
-					});
+
+
+						default -> settings.put(key, line.substring(line.indexOf("=") + 1));
+					}
+
+				}
+			});
 
 		} catch (FileNotFoundException e) {
 			saveConfig();
@@ -113,8 +98,7 @@ public class Configurator {
 	}
 
 	public void saveConfig(boolean writeDefaults) {
-		final String infoText = "# Hi. equal sign (=) separates the key and value. Use hashtag (#) for comments.\n" +
-				"# Note: comments will always be at the top when saving settings\nversion=0.0.1";
+		final String infoText = "# Hi. equal sign (=) separates the key and value. Use hashtag (#) for comments.\n" + "# Note: comments will always be at the top when saving settings\nversion=0.0.1";
 		List<String> comments = new LinkedList<>();
 
 
@@ -123,14 +107,12 @@ public class Configurator {
 			BufferedReader configRead = new BufferedReader(new FileReader(new File("./config.wah")));
 			comments = new LinkedList<>();
 			List<String> finalComments = comments;
-			configRead.lines().forEach(
-					line -> {
-						// format is name=value
-						if (!line.startsWith("#")) {
-							finalComments.add(line);
-						}
-					}
-			);
+			configRead.lines().forEach(line -> {
+				// format is name=value
+				if (!line.startsWith("#")) {
+					finalComments.add(line);
+				}
+			});
 		} catch (FileNotFoundException e) {
 			writeDefaults = true;
 		}
@@ -143,7 +125,8 @@ public class Configurator {
 			out = new FileWriter("./config.wah");
 			if (writeDefaults) {
 				out.write(infoText);
-			} else {
+			}
+			else {
 				FileWriter finalOut = out;
 				comments.forEach(i -> {
 					try {
@@ -163,7 +146,8 @@ public class Configurator {
 			for (String s : AVAIL_SETTINGS) {
 				if (!settings.containsKey(s)) {
 					out.append(s + "=" + defaults.get(s) + "\n");
-				} else {
+				}
+				else {
 					out.append(s + "=" + settings.get(s) + "\n");
 				}
 			}
@@ -253,7 +237,8 @@ public class Configurator {
 				}
 
 				settings.put(key, String.valueOf(newVal));
-			} else { // int values
+			}
+			else { // int values
 				settings.put(key, String.valueOf(value.intValue()));
 			}
 
