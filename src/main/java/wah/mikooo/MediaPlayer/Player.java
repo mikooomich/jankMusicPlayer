@@ -6,8 +6,7 @@ import wah.mikooo.Ui.MainWindow;
 import javax.sound.sampled.*;
 import java.io.*;
 
-import static wah.mikooo.ffmpegStuff.ffmpegWrapper.ffmpegOwO;
-import static wah.mikooo.ffmpegStuff.ffmpegWrapper.ffmpegOwOStream;
+import static wah.mikooo.ffmpegStuff.ffmpegWrapper.*;
 
 
 public class Player implements Runnable {
@@ -22,6 +21,7 @@ public class Player implements Runnable {
 
 	public static boolean useStreaming;
 	public static boolean preferStreaming;
+	public static boolean useHybridStreaming;
 
 	public static String ffmpegBinary = MainWindow.config.retrieve("ffmpeg");
 	public static String ffprobeBinary = MainWindow.config.retrieve("ffprobe");
@@ -413,12 +413,13 @@ public class Player implements Runnable {
 		 * @param useStreaming
 		 * @param preferStreaming
 		 */
-		public Mouth(Song path, boolean useStreaming, boolean preferStreaming) {
+		public Mouth(Song path, boolean useStreaming, boolean preferStreaming, boolean useHybridStreaming) {
 			Player.useStreaming = useStreaming;
 			if (!useStreaming) { // auto disable prefer streaming
 				Player.preferStreaming = false;
 			} else {
 				Player.preferStreaming = preferStreaming;
+				Player.useHybridStreaming = useHybridStreaming;
 			}
 
 			currSong = path;
@@ -434,7 +435,7 @@ public class Player implements Runnable {
 		 * @param path
 		 */
 		public Mouth(Song path) {
-			this(path, true, false);
+			this(path, true, false, true);
 		}
 
 
@@ -496,11 +497,13 @@ public class Player implements Runnable {
 
 		/**
 		 * Play sound.
+		 *
 		 * If useStreaming is true, first lookup memory for song, then use streaming as a fallback if required.
-		 * If useStreaming is false, the user must manually do ffmpeg
-		 * If preferStreaming is true, we will always ffmpeg stream the song.
-		 * <p>
-		 * While streaming, the song is directly streamed from ffmpeg, and a copy of the song will be saved in memory.
+		 * If useStreaming is false, we will always wait for FFMpeg transcode to finish before playing.
+		 * If useHybridStreaming is true, we will directly stream from the byte array FFMpeg transcode into.
+		 * If preferStreaming is true, we will always FFMpeg stream the song without saving transcode to memory.
+		 *
+		 * With useStreaming enable and hybrid streaming disabled, the song is directly streamed from FFMpeg, and a copy of the song will be saved in memory (these are 2 separate threads).
 		 */
 		synchronized void audioSession() {
 
@@ -517,23 +520,40 @@ public class Player implements Runnable {
 				audioFile = sb.getCurrentlyPlaying().getAudio(); // lookup, retrieve
 			}
 
-			// fallback to streaming
-			if (audioFile == null || preferStreaming) {
-				audioStream = ffmpegOwOStream(fileName);
+			// if streaming is enabled, stream and recode to memory in parallel
+			// else finish recode before start playing
+			if (useStreaming && !useHybridStreaming) {
+				// fallback to streaming if not already in memory
+				if (audioFile == null || preferStreaming) {
+					audioStream = ffmpegOwOStream(fileName);
 
-
-				Thread thread = new Thread(new Runnable() {
-					@Override
-					public void run() {
-						// load into memory. Hi this is a terrible hack and I should just feed the one input stream into 2 outputs... but here we are
-						sb.getCurrentlyPlaying().setAudio(ffmpegOwO(fileName));
-						/**
-						 *   remember to create write lock in songboard
-						 *   or will end up writing when not supposed to
-						 */
+					if (!preferStreaming) {
+						Thread thread = new Thread(new Runnable() {
+							@Override
+							public void run() {
+								// load into memory. Hi this is a terrible hack and I should just feed the one input stream into 2 outputs... but here we are
+								sb.getCurrentlyPlaying().setAudio(ffmpegOwO(fileName));
+								/**
+								 *   remember to create write lock in songboard
+								 *   or will end up writing when not supposed to
+								 */
+							}
+						});
+						thread.start();
 					}
-				});
-				thread.start();
+				}
+			}
+			else if (useStreaming && useHybridStreaming) {
+				System.out.println("Using hybrid streaming");
+				sb.getCurrentlyPlaying().setAudio(ffmpegOwOHybrid(fileName));
+				System.out.println("Starting playing now");
+				audioFile = sb.getCurrentlyPlaying().getAudio(); // lookup, retrieve
+			}
+			else { // use streaming == false
+				System.out.println("Waiting for transcode to finish before playing");
+				sb.getCurrentlyPlaying().setAudio(ffmpegOwO(fileName));
+				System.out.println("Transcode finished, Starting playing now");
+				audioFile = sb.getCurrentlyPlaying().getAudio(); // lookup, retrieve
 			}
 
 
