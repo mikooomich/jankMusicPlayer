@@ -3,8 +3,8 @@ package wah.mikooo.ffmpegStuff;
 import java.io.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static wah.mikooo.MediaPlayer.Player.ffmpegBinary;
-import static wah.mikooo.MediaPlayer.Player.ffprobeBinary;
+import static wah.mikooo.Ui.MainWindow.ffmpegBinary;
+import static wah.mikooo.Ui.MainWindow.ffprobeBinary;
 
 
 public class ffmpegWrapper {

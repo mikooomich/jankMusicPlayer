@@ -3,6 +3,7 @@ package wah.mikooo.MediaPlayer;
 import javafx.scene.image.Image;
 
 public class Song {
+	private Player plr;
 
 	public String path;
 	byte[] audio;
@@ -39,6 +40,11 @@ public class Song {
 	 */
 	public Song(String path) {
 		this.path = path;
+	}
+
+	public Song(String path, Player playerLink) {
+		this.path = path;
+		plr = playerLink;
 	}
 
 	/**
@@ -80,6 +86,11 @@ public class Song {
 	 */
 	public void setValidity(int statusCode) {
 		status = statusCode;
+	}
+
+	public void setPlayer(Player playerLink) {
+		plr = playerLink;
+		lyrics.plr = plr;
 	}
 
 //    /**

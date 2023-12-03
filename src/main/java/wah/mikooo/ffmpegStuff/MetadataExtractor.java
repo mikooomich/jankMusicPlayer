@@ -5,16 +5,14 @@ import wah.mikooo.Exceptions.MetadataExtractorException;
 import wah.mikooo.MediaPlayer.LrcReader;
 import wah.mikooo.MediaPlayer.Song;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.concurrent.Callable;
 
 
-import static wah.mikooo.MediaPlayer.Player.ffmpegBinary;
-import static wah.mikooo.MediaPlayer.Player.ffprobeBinary;
+import static wah.mikooo.Ui.MainWindow.ffmpegBinary;
+import static wah.mikooo.Ui.MainWindow.ffprobeBinary;
 
 public class MetadataExtractor implements Callable<Integer> {
 

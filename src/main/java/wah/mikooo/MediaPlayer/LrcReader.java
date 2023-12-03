@@ -2,13 +2,18 @@ package wah.mikooo.MediaPlayer;
 
 import wah.mikooo.Ui.MainWindow;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Lyrics
+ */
 public class LrcReader {
-
-
+	protected Player plr;
 	private static final long LYRIC_MS_DELAY = 500;
 	boolean paused = false;
 	boolean alive = false;
@@ -18,6 +23,7 @@ public class LrcReader {
 	 * Sync lyric (lrc) file representation
 	 */
 	public class LyricEntry {
+
 		String lyric;
 		long timestampMS;
 
@@ -216,8 +222,8 @@ public class LrcReader {
 
 				MainWindow.drawCenter(); // clear old ui element
 				try {
-					while (alive && Player.USE_LYRICS) {
-						while (!paused && Player.USE_LYRICS) {
+					while (alive && plr.USE_LYRICS) {
+						while (!paused && plr.USE_LYRICS) {
 							// This double loop serves no purpose because "resumes" are now treated as "start"
 							// I guess it won't hurt to keep it here...
 							long waitTime = doPrint(currTstmp);
@@ -245,7 +251,7 @@ public class LrcReader {
 	 * This method also kills the old session with killSession()
 	 */
 	public void startSession() {
-		if (!Player.USE_LYRICS) { // lyrics are disabled
+		if (!plr.USE_LYRICS) { // lyrics are disabled
 			System.out.println("Lyrics are disabled, exiting lyric printer");
 			return;
 		}
@@ -265,7 +271,7 @@ public class LrcReader {
 		killSession();
 		paused = false;
 		alive = true;
-		currTstmp =  Player.Mouth.getCurrentPosMs();
+		currTstmp = plr.getCurrentPosMs();
 		System.out.println("set time to " + currTstmp);
 		lrcPrinter();
 	}
@@ -276,7 +282,7 @@ public class LrcReader {
 	 * @param timeStamp timestamp (in ms) to save to odometer
 	 */
 	public void pause(long timeStamp) {
-		if (!Player.USE_LYRICS) { // lyrics are disabled
+		if (!plr.USE_LYRICS) { // lyrics are disabled
 			return;
 		}
 		killSession();
@@ -288,7 +294,7 @@ public class LrcReader {
 	 * This is the same as startSession, but doesn't do anything if session is playing
 	 */
 	public void resume() {
-		if (!paused || !Player.USE_LYRICS) {
+		if (!paused || !plr.USE_LYRICS) {
 			return;
 		}
 
@@ -310,6 +316,7 @@ public class LrcReader {
 	/**
 	 * for debugging data structure
 	 */
+	/*
 	private void printlist() {
 		data.forEach(lyricEntry -> {
 			System.out.println("timestamp (ms)-> " + lyricEntry.timestampMS + "\nLyric--> " + lyricEntry.lyric);
@@ -321,5 +328,5 @@ public class LrcReader {
 		LrcReader waaa = new LrcReader("./test.ml2");
 		waaa.printlist();
 	}
-
+*/
 }

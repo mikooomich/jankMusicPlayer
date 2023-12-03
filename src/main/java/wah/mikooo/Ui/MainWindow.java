@@ -28,8 +28,6 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static wah.mikooo.MediaPlayer.Player.defaultVolume;
-import static wah.mikooo.MediaPlayer.Player.sb;
 import static wah.mikooo.Utilities.Configurator.AVAIL_BOOL_SETTINGS;
 
 public class MainWindow extends Application {
@@ -37,6 +35,9 @@ public class MainWindow extends Application {
 	static Player player;
 	static Thread playerThread;
 	public static Configurator config;
+
+	public static String ffmpegBinary;
+	public static String ffprobeBinary;
 
 	// main elements
 	static BorderPane main;
@@ -58,9 +59,10 @@ public class MainWindow extends Application {
 	public void start(Stage stage) throws InterruptedException {
 		Thread brains = new Thread(new Runnable() {
 			public void run() {
-
 				try {
 					config = new Configurator();
+					ffmpegBinary = config.retrieve("ffmpeg");
+					ffprobeBinary = config.retrieve("ffprobe");
 				} catch (FileNotFoundException e) {
 					throw new RuntimeException(e);
 				}
@@ -245,7 +247,7 @@ public class MainWindow extends Application {
 	public static void updateSongPos(Song s) {
 		seekBar.setMax(s.length);
 		seekBar.setMin(0);
-		seekBar.setValue(Player.Mouth.getCurrentPosMs());
+		seekBar.setValue(player.getCurrentPosMs());
 	}
 
 	/**
@@ -256,7 +258,7 @@ public class MainWindow extends Application {
 		slider.setOrientation(Orientation.VERTICAL);
 		slider.setMin(-40);
 		slider.setMax(5);
-		slider.setValue(defaultVolume);
+		slider.setValue(player.defaultVolume);
 		slider.setMajorTickUnit(10);
 		slider.setShowTickLabels(true);
 
@@ -297,11 +299,7 @@ public class MainWindow extends Application {
 				System.out.println("toggle show lyrics");
 				player.toggleUseLyrics();
 				drawCenter();
-
-				if (sb.getCurrentlyPlaying().lyrics != null) {
-					sb.getCurrentlyPlaying().lyrics.startSession(); // start lyric printer
-				}
-
+				player.startLyricPrinter();
 			}
 		};
 
@@ -359,7 +357,8 @@ public class MainWindow extends Application {
 		VBox centerShit = new VBox();
 		centerShit.setPrefSize(400, 400);
 
-		if (sb == null || sb.getCurrentlyPlaying() == null) {
+		Song s = player.getCurrentlyPlaying();
+		if (s == null) {
 			// draw placeholder
 			try {
 
@@ -375,7 +374,7 @@ public class MainWindow extends Application {
 		} else if (lyrics == null && !player.getUseLyrics()) {
 			// draw art instead of lyrics when lyrics are present and enabled
 			System.out.println("drawing image\n\n\n\n\nAAAAAAAAAAAAAAAAAAAAAAAAAA");
-			Image art = sb.getCurrentlyPlaying().albumArt;
+			Image art = s.albumArt;
 
 			if (art == null) {
 				imageView = new ImageView(new Image("./placeholder.png"));
@@ -387,8 +386,8 @@ public class MainWindow extends Application {
 					player.toggleUseLyrics();
 					drawCenter();
 
-					if (sb.getCurrentlyPlaying().lyrics != null) {
-						sb.getCurrentlyPlaying().lyrics.startSession(); // start lyric printer
+					if (s.lyrics != null) {
+						s.lyrics.startSession(); // start lyric printer
 					}
 				});
 			}
@@ -414,12 +413,14 @@ public class MainWindow extends Application {
 	 * Draw artist and titles/ info bar
 	 */
 	public static void redrawTitles() {
-		if (sb == null || sb.getCurrentlyPlaying() == null) {
+		Song s = player.getCurrentlyPlaying();
+
+		if (s == null) {
 			title = new Label("TITLE");
 			artist = new Label("ARTIST");
 		} else {
-			title = new Label(sb.getCurrentlyPlaying().title);
-			artist = new Label(sb.getCurrentlyPlaying().artist);
+			title = new Label(s.title);
+			artist = new Label(s.artist);
 		}
 
 		songTitles = new VBox();
@@ -448,5 +449,10 @@ public class MainWindow extends Application {
 		});
 
 	}
+
+
+	 public static Player getPlayer() {
+		return player;
+	 }
 
 }
