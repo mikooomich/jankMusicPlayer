@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'application'
-    id 'org.openjfx.javafxplugin' version '0.0.13'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
 group 'wah.mikooo'
@@ -15,9 +15,20 @@ dependencies {
 }
 
 javafx {
-    version = "20"
+    version = "21.0.1"
     modules = [ 'javafx.controls' ]
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += "--enable-preview"
+}
+
+tasks.withType(Test).configureEach {
+    jvmArgs += "--enable-preview"
+}
+
+tasks.withType(JavaExec).configureEach {
+    jvmArgs += '--enable-preview'
+}
 
 mainClassName = "wah.mikooo.Ui.MainWindow"
