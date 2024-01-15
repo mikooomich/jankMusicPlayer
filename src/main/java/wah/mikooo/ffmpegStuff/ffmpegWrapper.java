@@ -3,6 +3,7 @@ package wah.mikooo.ffmpegStuff;
 import java.io.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.lang.StringTemplate.STR;
 import static wah.mikooo.Ui.MainWindow.ffmpegBinary;
 import static wah.mikooo.Ui.MainWindow.ffprobeBinary;
 
@@ -11,10 +12,13 @@ public class ffmpegWrapper {
 	public static final int BYTE_BUFFER_SIZE = 1000000;
 
 	/**
-	 * Transcode audio file to wav PCM s16le "file" using ffmpeg.
+	 * Transcode audio file to WAV PCM s16le "file" using FFmpeg.
+	 * Requires ffmpegBinary to be set
+	 * <p>
+	 * WARNING: This is a blocking call until transcoding finishes.
 	 *
-	 * @param fileName directory of file
-	 * @return byte array
+	 * @param fileName directory to file including file name
+	 * @return Audio data (byte array)
 	 */
 	public static byte[] ffmpegOwO(String fileName) {
 		ProcessBuilder processBuilder;
@@ -55,10 +59,12 @@ public class ffmpegWrapper {
 
 
 	/**
-	 * Transcode audio file to wav PCM s16le stream using ffmpeg.
+	 * Transcode audio file to WAV PCM s16le Input Stream using FFmpeg.
+	 * Requires ffmpegBinary to be set
+	 * <p>
 	 *
 	 * @param fileName directory of file
-	 * @return stream
+	 * @return Audio data (Input Stream)
 	 */
 	public static InputStream ffmpegOwOStream(String fileName) {
 		final InputStream[] dataOut = {null};
@@ -109,11 +115,14 @@ public class ffmpegWrapper {
 
 
 	/**
-	 * Transcode audio file to wav PCM s16le "file" using ffmpeg.
-	 * Write byte array asynchronously
+	 * Transcode audio file to WAV PCM s16le "file" asynchronously using FFmpeg.
+	 * Requires ffmpegBinary to be set
+	 * <p>
+	 * WARNING: This is a non-blocking call, data is written to the byte array asynchronously.
+	 * Here be the asynchronous demons.
 	 *
 	 * @param fileName directory of file
-	 * @return byte array
+	 * @return Audio data (byte array)
 	 */
 	public static byte[] ffmpegOwOHybrid(String fileName) {
 		ProcessBuilder ffmpeg;
@@ -172,7 +181,7 @@ public class ffmpegWrapper {
 //							System.out.println("TOTAL BYTES" + totalBytesRead);
 						}
 
-						System.out.println("DONE");
+						System.out.println(STR."Writerite complete. Track duration: \{trackDuration.get()} Bytes: \{totalBytesRead}");
 					} catch (IOException e) {
 						e.printStackTrace();
 					}

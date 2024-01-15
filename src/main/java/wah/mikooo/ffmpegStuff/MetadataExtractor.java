@@ -19,9 +19,13 @@ public class MetadataExtractor implements Callable<Integer> {
 	private Song target;
 
 	/**
-	 * A Song wrapper for metadata extraction
+	 * A Song wrapper for metadata extraction. This is designed to be run with an Execution.
+	 * <p>
+	 * This will use ffprobe to check if this is a valid song, then ffmpeg to extract the album art,
+	 * and simultaneously stealing the log output for the metadata.
+	 * Song will be directly written to.
 	 *
-	 * @param target
+	 * @param target song to extract metadata for
 	 */
 	public MetadataExtractor(Song target) {
 		this.target = target;
@@ -30,16 +34,18 @@ public class MetadataExtractor implements Callable<Integer> {
 
 	@Override
 	public Integer call() {
-
-		ProcessBuilder processBuilder;
-		Process ffmpegThingy = null;
+		ProcessBuilder artExtractorProcess;
+		Process artExtractor = null;
 
 		try {
 			// confirm there is audio stream
+			ProcessBuilder ffprobeBuilder;
+			Process ffprobe = null;
+
 			System.out.println("Checking if valid: " + target.path);
-			processBuilder = new ProcessBuilder(ffprobeBinary, "-i", target.path, "-show_streams", "-select_streams", "a", "-loglevel", "error");
-			ffmpegThingy = processBuilder.start();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(ffmpegThingy.getInputStream()));
+			ffprobeBuilder = new ProcessBuilder(ffprobeBinary, "-i", target.path, "-show_streams", "-select_streams", "a", "-loglevel", "error");
+			ffprobe = ffprobeBuilder.start();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(ffprobe.getInputStream()));
 
 
 			if (reader.readLine() == null) {
@@ -51,18 +57,18 @@ public class MetadataExtractor implements Callable<Integer> {
 			System.out.println("Valid audio stream found!");
 
 
-			// setup ffmpegStuff to extract album art
-			processBuilder = new ProcessBuilder(ffmpegBinary, "-i", target.path, "-an", "-vframes", "1", "-c:v", "png", "-f", "image2pipe", "-");
-			ffmpegThingy = processBuilder.start();
-			reader = new BufferedReader(new InputStreamReader(ffmpegThingy.getErrorStream()));
+			// setup FFMpeg to extract album art
+			artExtractorProcess = new ProcessBuilder(ffmpegBinary, "-i", target.path, "-an", "-vframes", "1", "-c:v", "png", "-f", "image2pipe", "-");
+			artExtractor = artExtractorProcess.start();
+			reader = new BufferedReader(new InputStreamReader(artExtractor.getErrorStream()));
 
 
 			// extract album art/thumbnail
-			System.out.println("Starting image extractor");
-			Process finalFfmpegThingy = ffmpegThingy;
+			Process finalFfmpegThingy = artExtractor;
 			new Thread(new Runnable() {
 				@Override
 				public void run() {
+					System.out.println("Extracting image...");
 					Image albumArtFromFFMPEG = null;
 					albumArtFromFFMPEG = new Image(finalFfmpegThingy.getInputStream());
 					target.albumArt = albumArtFromFFMPEG;
@@ -70,8 +76,10 @@ public class MetadataExtractor implements Callable<Integer> {
 				}
 			}).start();
 
-
-			System.out.println("Starting metadata reader");
+			/**
+			 * TODO: refactor to use from ffprobe
+			 */
+			System.out.println("Reading metadata...");
 			// steal ffmpeg output for metadata
 			try {
 				reader.lines().forEach(line -> {
@@ -98,14 +106,16 @@ public class MetadataExtractor implements Callable<Integer> {
 							String[] parsed = line.split(":");
 							target.album = parsed[1].trim();
 						}
-						else if (line.contains("Duration")) {
+						else if (line.contains("Duration")) { // bitrate AND length of song
+							/**
+							 * TODO: pull duration from ffprobe, store as exact ms. Use method in ffmpegWrapper hybrid method
+							 */
 							String[] parsed = line.split(", ");
-
 
 							String raw = parsed[0].trim().split(" ")[1].trim().replace(".", ":");
 							String[] cleaned = raw.split(":");
 							long lengthMS = 0;
-							for (int i = 0; i < cleaned.length; i++) {
+							for (int i = 0; i < cleaned.length; i++) { // parse timecode into milliseconds
 								switch (i) {
 									case 0:
 										lengthMS += Long.parseLong(cleaned[i]) * 60 * 60 * 1000;
@@ -118,14 +128,14 @@ public class MetadataExtractor implements Callable<Integer> {
 										break; // seconds
 									case 3:
 										lengthMS += Long.parseLong(cleaned[i]);
-										break; // seconds
+										break; // milliseconds
 								}
 							}
 
 							target.length = lengthMS;
 							target.bitrate = Integer.parseInt(parsed[2].split(" ")[1]);
 						}
-						else if (line.contains("Audio:") && line.contains("Stream")) {
+						else if (line.contains("Audio:") && line.contains("Stream")) { // codec, sample rate, channels
 							if (target.codec.isEmpty()) { // only take metadata of first audio track if many are available
 								String[] parsed = line.split(", ");
 
